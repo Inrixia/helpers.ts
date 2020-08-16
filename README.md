@@ -1,1 +1,1 @@
-Helpers
+Helpers for various projects

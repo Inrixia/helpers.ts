@@ -1,0 +1,22 @@
+{
+  "name": "@inrixia/helpers",
+  "version": "1.0.0",
+  "description": "Helper functions for various projects",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Inrixia/Helpers.git"
+  },
+  "author": "Inrix",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Inrixia/Helpers/issues"
+  },
+  "homepage": "https://github.com/Inrixia/Helpers#readme"
+}

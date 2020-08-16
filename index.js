@@ -1,5 +1,5 @@
 module.exports = { 
-	elastic: require('./lib/elastic.js'), 
-	obj: require('./lib/object.js'), 
-	math: require('./lib/math.js')
+	Elastic: require('./lib/elastic.js'), 
+	Obj: require('./lib/object.js'), 
+	Math: require('./lib/math.js')
 }

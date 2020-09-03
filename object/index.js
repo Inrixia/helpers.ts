@@ -64,7 +64,40 @@ const chunkArray = (array, chunkSize) => {
  */
 const objectify = obj => JSON.parse(JSON.stringify(obj))
 
+/**
+ * Logs a inspected object to console
+ * @param {*} obj Object to inspect
+ * @param {boolean} showHidden Show hidden properties of object
+ * @param {number} depth Depth to inspect object
+ * @param {boolean} color Color resulting output
+ * @returns {void}
+ */
+const lObj = (obj, showHidden=false, depth=5, color=true) => console.log(util.inspect(obj, showHidden, depth, color))
 
-const lErr = err => console.log(util.inspect(err, false, 10, true))
+/**
+ * Inspects a object
+ * @param {*} obj Object to inspect
+ * @param {boolean} showHidden Show hidden properties of object
+ * @param {number} depth Depth to inspect object
+ * @param {boolean} color Color resulting output
+ * @returns {string}
+ */
+const iObj = (obj, showHidden=false, depth=5, color=true) => util.inspect(obj, showHidden, depth, color)
 
-module.exports = { isDuplicate, chunkArray, objectify, lErr, isObject, deepMerge }
+/**
+ * Pad a number with 0's
+ * @param {number} num Number to pad.
+ * @param {number} zeros Number of digits returned number should have.
+ * 
+ * @returns {string} Padded number
+ * @example
+ * let paddedNumber = nPad2(5, 2)
+ * // paddedNumber = 05
+ */
+const nPad = (num, zeros) => { // 1 -> 01
+	num = num.toString()
+	while (num.length < zeros) num = '0'+num
+	return num
+}
+
+module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, isObject, deepMerge, nPad }

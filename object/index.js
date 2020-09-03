@@ -91,10 +91,12 @@ const iObj = (obj, showHidden=false, depth=5, color=true) => util.inspect(obj, s
  * 
  * @returns {string} Padded number
  * @example
- * let paddedNumber = nPad2(5, 2)
- * // paddedNumber = 05
+ * let paddedNumber = nPad(5)
+ * // paddedNumber = "05"
+ * let triplePaddedNumber = nPad(6, 3)
+ * // triplePaddedNumber = "006"
  */
-const nPad = (num, zeros) => { // 1 -> 01
+const nPad = (num, zeros=2) => {
 	num = num.toString()
 	while (num.length < zeros) num = '0'+num
 	return num

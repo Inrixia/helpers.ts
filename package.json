@@ -3,9 +3,6 @@
   "version": "1.3.0",
   "description": "Helper functions for various projects",
   "main": "index.js",
-  "directories": {
-    "lib": "lib"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -18,5 +15,6 @@
   "bugs": {
     "url": "https://github.com/Inrixia/Helpers/issues"
   },
-  "homepage": "https://github.com/Inrixia/Helpers#readme"
+  "homepage": "https://github.com/Inrixia/Helpers#readme",
+  "dependencies": {}
 }

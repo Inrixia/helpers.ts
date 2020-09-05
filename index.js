@@ -1,5 +1,6 @@
 module.exports = { 
-	Elastic: require('./elastic'), 
-	Obj: require('./object'), 
-	Math: require('./math')
+	wlastic: require('./elastic'), 
+	obj: require('./object'), 
+	math: require('./math'),
+	geo: require('./geo')
 }

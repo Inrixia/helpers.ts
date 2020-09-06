@@ -4,8 +4,9 @@ const { deepTypeCompare, iObj } = require('../object')
  * Jest expects extend function for checking an object match a specific format. Uses @inrixia/helpers/object.deepTypeCompare
  */
 toMatchFormat = (object, format) => {
-	if (!deepTypeCompare(object, format)) return {
-		message: () => `${iObj(object)} does not match expected Format`,
+	const matches = deepTypeCompare(object, format)
+	if (matches !== true) return {
+		message: () => `${matches.location} does not match expected Format\n${matches.got} != ${matches.expected}`,
 		pass: false,
 	}
 }
@@ -19,8 +20,9 @@ childrenToMatchFormat = (array, format) => {
 		pass: false,
 	}
 	for (object of array) {
-		if (!deepTypeCompare(object, format)) return {
-			message: () => `${iObj(object)} child does not match expected Format`,
+		const matches = deepTypeCompare(object, format)
+		if (matches !== true) return {
+			message: () => `${matches.location} does not match expected Format\n${matches.got} != ${matches.expected}`,
 			pass: false,
 		}
 	}

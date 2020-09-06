@@ -40,21 +40,33 @@ const deepMerge = (target, ...sources) => {
  * Take in a target `object` and a `types` object with identical keys but values as array of types those keys should be.
  * @param {object} target Object
  * @param {object} types Object identical to `target` but values are types
- * @returns {boolean} `False` if the types dont match. `True` if they do.
+ * @returns {{ location: string, expected: string, got: object }|boolean} `False` if the types dont match. `True` if they do.
  */
-const deepTypeCompare = (target, types) => {
-	if (!(isObject(target) && isObject(types))) return false
+const deepTypeCompare = (target, types, whereami='target') => {
+	if (!(isObject(target) && isObject(types))) return whereami
 	for (const key in target) {
-		if (isObject(target[key])) {
-			if (!deepTypeCompare(target[key], types[key])) return false
+		if (isObject(target[key])) { // If target.property is a object then check its child properties
+			const same = deepTypeCompare(target[key], types[key], `${whereami}.${key}`)
+			if (same !== true) return same
 		} else {
-			if (Array.isArray(target[key]) && Array.isArray(types[key])) { // Both are array
-				const childCheckType = type(types[key][0])
-				if (!target[key].some(targetType => targetType === childCheckType)) return false
+			if (Array.isArray(target[key]) && Array.isArray(types[key])) { // target.property and types.property are arrays
+				// Check each item in target.property against types.property[0]
+				const childCheckType = types[key][0]
+				for (const targetItem of target[key]) {
+					targetType = type(targetItem)
+					// If the array entry is a object then check it 
+					let same;
+					if (targetType === 'object') same = deepTypeCompare(targetItem, childCheckType, `${whereami}.${key}`)
+					else if (targetType !== childCheckType) return { location: `${whereami}.${key}`, expected: childCheckType, got: targetItem }
+
+					if (same !== true) return same
+				}
 			} else {
 				if (!Array.isArray(types[key])) types[key] = [types[key]]
 				const targetType = type(target[key])
-				if (!types[key].some(checkType => targetType === checkType)) return false
+				for (const checkType of types[key]) {
+					if (targetType !== checkType) return { location: `${whereami}.${key}`,  expected: checkType, got: target[key], }
+				}
 			}
 		}
 	}

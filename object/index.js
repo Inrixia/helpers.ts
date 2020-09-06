@@ -43,7 +43,7 @@ const deepMerge = (target, ...sources) => {
  * @returns {{ location: string, expected: string, got: object }|boolean} `False` if the types dont match. `True` if they do.
  */
 const deepTypeCompare = (target, types, whereami='target') => {
-	if (!(isObject(target) && isObject(types))) return { location: `${whereami}.${key}`, expected: 'object', got: target }
+	if (!(isObject(target) && isObject(types))) return { location: `${whereami}.${key}`, expected: 'object', got: `${target}:${type(target)}` }
 	for (const key in target) {
 		if (isObject(target[key])) { // If target.property is a object then check its child properties
 			const same = deepTypeCompare(target[key], types[key], `${whereami}.${key}`)
@@ -57,20 +57,34 @@ const deepTypeCompare = (target, types, whereami='target') => {
 					// If the array entry is a object then check it 
 					let same = true;
 					if (targetType === 'object') same = deepTypeCompare(targetItem, childCheckType, `${whereami}.${key}`)
-					else if (targetType !== childCheckType) return { location: `${whereami}.${key}`, expected: childCheckType, got: targetItem }
+					else same = compareTwo(childCheckType, targetItem, `${whereami}.${key}`)
 
 					if (same !== true) return same
 				}
 			} else {
-				if (!Array.isArray(types[key])) types[key] = [types[key]]
-				const targetType = type(target[key])
-				for (const checkType of types[key]) {
-					if (targetType !== checkType) return { location: `${whereami}.${key}`,  expected: checkType, got: target[key], }
-				}
+				const same = compareTwo(types[key], target[key], `${whereami}.${key}`)
+				if (same !== true) return same
 			}
 		}
 	}
 	return true
+}
+
+/**
+ * Helper function for `deepTypeCompare` to compare a item to a type or set of types.
+ * @param {string|Array<string>} expected Expected type/types
+ * @param {object} got Object given
+ * @param {string} whereami Location of `got` given
+ */
+const compareTwo = (expected, got, whereami) => {
+	if (!Array.isArray(expected)) expected = [expected]
+	const gotType = type(got)
+	let same = true;
+	for (const expectedType of expected) {
+		if (gotType !== expectedType) same = { location: whereami, expected, got: `${got}:${gotType}` }
+		if (same === true) break;
+	}
+	return same
 }
 
 /**

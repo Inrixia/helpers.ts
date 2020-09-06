@@ -43,7 +43,7 @@ const deepMerge = (target, ...sources) => {
  * @returns {{ location: string, expected: string, got: object }|boolean} `False` if the types dont match. `True` if they do.
  */
 const deepTypeCompare = (target, types, whereami='target') => {
-	if (!(isObject(target) && isObject(types))) return whereami
+	if (!(isObject(target) && isObject(types))) return { location: `${whereami}.${key}`, expected: 'object', got: target }
 	for (const key in target) {
 		if (isObject(target[key])) { // If target.property is a object then check its child properties
 			const same = deepTypeCompare(target[key], types[key], `${whereami}.${key}`)
@@ -55,7 +55,7 @@ const deepTypeCompare = (target, types, whereami='target') => {
 				for (const targetItem of target[key]) {
 					targetType = type(targetItem)
 					// If the array entry is a object then check it 
-					let same;
+					let same = true;
 					if (targetType === 'object') same = deepTypeCompare(targetItem, childCheckType, `${whereami}.${key}`)
 					else if (targetType !== childCheckType) return { location: `${whereami}.${key}`, expected: childCheckType, got: targetItem }
 

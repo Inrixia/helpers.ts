@@ -37,6 +37,38 @@ const deepMerge = (target, ...sources) => {
 }
 
 /**
+ * Take in a target `object` and a `types` object with identical keys but values as array of types those keys should be.
+ * @param {object} target Object
+ * @param {object} types Object identical to `target` but values are types
+ * @returns {boolean} `False` if the types dont match. `True` if they do.
+ */
+const deepTypeCompare = (target, types) => {
+	if (!(isObject(target) && isObject(types))) return false
+	for (const key in target) {
+		if (isObject(target[key])) {
+			if (!deepTypeCompare(target[key], types[key])) {
+				return false
+			}
+		} else {
+			if(!types[key].some(tpe => type(target[key]) === tpe)) return false
+		}
+	}
+	return true
+}
+
+/**
+ * Returns the type of `item` respecting `Array`, `null` and `undefined` unlike typeof.
+ * @param {*} item 
+ * @returns {string} Type of item
+ */
+const type = item => {
+	if (Array.isArray(item)) return 'array'
+	if (item === null) return 'null'
+	if (item === undefined) return 'undefined'
+	return typeof item
+}
+
+/**
  * Breaks `array` into smaller chunks based on `chunkSize`
  * @param {Array} array Array to break up.
  * @param {number} chunkSize Maximum size of array chunks.
@@ -102,4 +134,4 @@ const nPad = (num, zeros=2) => {
 	return num
 }
 
-module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, isObject, deepMerge, nPad }
+module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, isObject, deepMerge, deepTypeCompare, type, nPad }

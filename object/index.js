@@ -104,22 +104,29 @@ const objectify = obj => JSON.parse(JSON.stringify(obj))
 /**
  * Logs a inspected object to console
  * @param {*} obj Object to inspect
- * @param {boolean} showHidden Show hidden properties of object
- * @param {number} depth Depth to inspect object
- * @param {boolean} color Color resulting output
+ * @param {{ showHidden?: boolean, depth?: number, color?: boolean }} options
+ * @param {boolean} options.showHidden Show hidden properties of object
+ * @param {number} options.depth Depth to inspect object
+ * @param {boolean} options.color Color resulting output
  * @returns {void}
  */
-const lObj = (obj, showHidden=false, depth=5, color=true) => console.log(util.inspect(obj, showHidden, depth, color))
+const lObj = (obj, options) => console.log(util.inspect(obj, options))
 
 /**
  * Inspects a object
  * @param {*} obj Object to inspect
- * @param {boolean} showHidden Show hidden properties of object
- * @param {number} depth Depth to inspect object
- * @param {boolean} color Color resulting output
+ * @param {{ showHidden?: boolean, depth?: number, color?: boolean }} options
+ * @param {boolean} options.showHidden Show hidden properties of object
+ * @param {number} options.depth Depth to inspect object
+ * @param {boolean} options.color Color resulting output
  * @returns {string}
  */
-const iObj = (obj, showHidden=false, depth=5, color=true) => util.inspect(obj, showHidden, depth, color)
+const iObj = (obj, options={}) => {
+	if (options.showHidden === undefined) options.showHidden = false
+	if (options.depth === undefined) options.depth = 5
+	if (options.color === undefined) options.color = true
+	return util.inspect(obj, options.showHidden, options.depth, options.color)
+}
 
 /**
  * Pad a number with 0's

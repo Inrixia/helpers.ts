@@ -9,6 +9,10 @@ toMatchFormat = (object, format) => {
 		message: () => `${matches.location} does not match expected Format\n${matches.got} != ${matches.expected}`,
 		pass: false,
 	}
+	return {
+		message: () => `matches expected Format`,
+		pass: true,
+	}
 }
 
 /**
@@ -27,7 +31,7 @@ childrenToMatchFormat = (array, format) => {
 		}
 	}
 	return {
-		message: () => `${iObj(array)} children match expected Format`,
+		message: () => `children match expected Format`,
 		pass: true,
 	}
 }

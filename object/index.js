@@ -46,11 +46,16 @@ const deepTypeCompare = (target, types) => {
 	if (!(isObject(target) && isObject(types))) return false
 	for (const key in target) {
 		if (isObject(target[key])) {
-			if (!deepTypeCompare(target[key], types[key])) {
-				return false
-			}
+			if (!deepTypeCompare(target[key], types[key])) return false
 		} else {
-			if(!types[key].some(tpe => type(target[key]) === tpe)) return false
+			if (Array.isArray(target[key]) && Array.isArray(types[key])) { // Both are array
+				const childCheckType = type(types[key][0])
+				if (!target[key].some(targetType => targetType === childCheckType)) return false
+			} else {
+				if (!Array.isArray(types[key])) types[key] = [types[key]]
+				const targetType = type(target[key])
+				if (!types[key].some(checkType => targetType === checkType)) return false
+			}
 		}
 	}
 	return true

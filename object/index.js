@@ -155,6 +155,19 @@ const iObj = (obj, options={}) => {
 }
 
 /**
+ * Recursively runs `func` and handles errors with `errorHandler` until `func` successfully finishes.
+ * @param {Function} func 
+ * @param {Function} errorHandler 
+ */
+const loopError = (func, errorHandler=()=>{}) => new Promise(async (resolve, reject) => {
+	resolve(await func().catch(async err => {
+		if (settings.debug) console.log(err)
+		await errorHandler(err);
+		resolve(loopError(func, errorHandler))
+	}))
+})
+
+/**
  * Pad a number with 0's
  * @param {number} num Number to pad.
  * @param {number} zeros Number of digits returned number should have.
@@ -172,4 +185,4 @@ const nPad = (num, zeros=2) => {
 	return num
 }
 
-module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, isObject, deepMerge, deepTypeCompare, type, nPad }
+module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, isObject, deepMerge, deepTypeCompare, type, nPad, loopError }

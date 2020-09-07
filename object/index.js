@@ -156,12 +156,12 @@ const iObj = (obj, options={}) => {
 
 /**
  * Recursively runs `func` and handles errors with `errorHandler` until `func` successfully finishes.
- * @param {Function} func 
- * @param {Function} errorHandler 
+ * @param {Function} func Function to execute
+ * @param {(err: Error) => void} errorHandler Function to execute when a error occours
+ * @returns {*} Return value of `func` on success
  */
 const loopError = (func, errorHandler=()=>{}) => new Promise(async (resolve, reject) => {
 	resolve(await func().catch(async err => {
-		if (settings.debug) console.log(err)
 		await errorHandler(err);
 		resolve(loopError(func, errorHandler))
 	}))

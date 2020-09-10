@@ -130,28 +130,41 @@ const objectify = obj => JSON.parse(JSON.stringify(obj))
 /**
  * Logs a inspected object to console
  * @param {*} obj Object to inspect
- * @param {{ showHidden?: boolean, depth?: number, color?: boolean }} options
- * @param {boolean} options.showHidden Show hidden properties of object
- * @param {number} options.depth Depth to inspect object
- * @param {boolean} options.color Color resulting output
+ * @param {boolean} options Show hidden properties of object
+ * @param {number} options Depth to inspect object
+ * @param {boolean} options Color resulting output
  * @returns {void}
  */
-const lObj = (obj, options) => console.log(iObj(obj, options))
+const lObj = (obj, ...options) => console.log(iObj(obj, ...options))
 
 /**
  * Inspects a object
  * @param {*} obj Object to inspect
- * @param {{ showHidden?: boolean, depth?: number, color?: boolean }} options
- * @param {boolean} options.showHidden Show hidden properties of object
- * @param {number} options.depth Depth to inspect object
- * @param {boolean} options.color Color resulting output
+ * @param {boolean} showHidden Show hidden properties of object
+ * @param {number} depth Depth to inspect object
+ * @param {boolean} color Color resulting output
  * @returns {string}
  */
-const iObj = (obj, options={}) => {
-	if (options.showHidden === undefined) options.showHidden = false
-	if (options.depth === undefined) options.depth = 5
-	if (options.color === undefined) options.color = true
-	return util.inspect(obj, options.showHidden, options.depth, options.color)
+const iObj = (obj, ...options) => {
+	if (options[0] === undefined || options[0] === null) options[0] = false
+	if (options[1] === undefined || options[1] === null) options[1] = 5
+	if (options[2] === undefined || options[2] === null) options[2] = true
+	return util.inspect(obj, ...options)
+}
+
+/**
+ * Single line inspect object.
+ * @param {*} obj Object to inspect
+ * @param {boolean} showHidden Show hidden properties of object
+ * @param {number} depth Depth to inspect object
+ * @param {boolean} color Color resulting output
+ * @returns {string} Inspected object in a single line, spaces aligned
+ */
+const sliObject = (obj, ...options) => {
+	if (options[0] === undefined || options[0] === null) options[0] = false
+	if (options[1] === undefined || options[1] === null) options[1] = 1
+	if (options[2] === undefined || options[2] === null) options[2] = true
+	return util.inspect(obj, ...options).replace(/\r?\n/g, ' ').replace(/  +/g, ' ')
 }
 
 /**
@@ -185,4 +198,4 @@ const nPad = (num, zeros=2) => {
 	return num
 }
 
-module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, isObject, deepMerge, deepTypeCompare, type, nPad, loopError }
+module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, sliObject, isObject, deepMerge, deepTypeCompare, type, nPad, loopError }

@@ -198,4 +198,25 @@ const nPad = (num, zeros=2) => {
 	return num
 }
 
-module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, sliObj, isObject, deepMerge, deepTypeCompare, type, nPad, loopError }
+/**
+ * @param {Array<number>} array
+ * @returns {string} String containing ranges of numbers.
+ * @example
+ * const range = toRange([1, 2, 3, 12, 6,7, 5, 27, 28, 29, 40, 41, 25, 42, 12])
+ * // range = "1-3 & 5-7 & 12 & 25 & 27-29 & 40-42"
+ */
+const toRange = array => {
+	array = array.sort((a, b) => a - b).filter((a, pos) => array.indexOf(a) === pos)
+	let sum = `${array[0]}`
+	let lastValue = array[0]
+	for (let i = 1; i <= array.length; i++) {
+		if (!(array[i]-1 === array[i-1])) {
+			if (array[i-1] !== lastValue) sum += `-${array[i-1]}`
+			if (array[i] !== undefined) sum += ` & ${array[i]}`
+			lastValue = array[i]
+		}
+	}
+	return sum
+}
+
+module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, sliObj, isObject, deepMerge, deepTypeCompare, type, nPad, loopError, toRange }

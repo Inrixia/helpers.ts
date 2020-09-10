@@ -206,7 +206,7 @@ const nPad = (num, zeros=2) => {
  * // range = "1-3 & 5-7 & 12 & 25 & 27-29 & 40-42"
  */
 const toRange = array => {
-	array = array.sort((a, b) => a - b).filter((a, pos) => array.indexOf(a) === pos)
+	array = array.filter((a, pos) => array.indexOf(a) === pos).sort((a, b) => a - b).map(a => +a)
 	let sum = `${array[0]}`
 	let lastValue = array[0]
 	for (let i = 1; i <= array.length; i++) {

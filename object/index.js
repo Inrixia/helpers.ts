@@ -136,7 +136,7 @@ const objectify = obj => JSON.parse(JSON.stringify(obj))
  * @param {boolean} options.color Color resulting output
  * @returns {void}
  */
-const lObj = (obj, options) => console.log(util.inspect(obj, options))
+const lObj = (obj, options) => console.log(iObj(obj, options))
 
 /**
  * Inspects a object

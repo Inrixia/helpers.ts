@@ -160,7 +160,7 @@ const iObj = (obj, ...options) => {
  * @param {boolean} color Color resulting output
  * @returns {string} Inspected object in a single line, spaces aligned
  */
-const sliObject = (obj, ...options) => {
+const sliObj = (obj, ...options) => {
 	if (options[0] === undefined || options[0] === null) options[0] = false
 	if (options[1] === undefined || options[1] === null) options[1] = 1
 	if (options[2] === undefined || options[2] === null) options[2] = true
@@ -198,4 +198,4 @@ const nPad = (num, zeros=2) => {
 	return num
 }
 
-module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, sliObject, isObject, deepMerge, deepTypeCompare, type, nPad, loopError }
+module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, sliObj, isObject, deepMerge, deepTypeCompare, type, nPad, loopError }

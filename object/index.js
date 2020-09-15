@@ -40,7 +40,7 @@ const deepMerge = (target, ...sources) => {
  * Take in a target `object` and a `types` object with identical keys but values as array of types those keys should be.
  * @param {object} target Object
  * @param {object} types Object identical to `target` but values are types
- * @returns {{ location: string, expected: string, got: object }|boolean} `False` if the types dont match. `True` if they do.
+ * @returns {{ location: string, expected: string, got: object }|boolean} `object` if the types dont match. `True` if they do.
  */
 const deepTypeCompare = (target, types, whereami='target') => {
 	if (!(isObject(target) && isObject(types))) return { location: `${whereami}.${key}`, expected: 'object', got: `${target}:${type(target)}` }
@@ -219,4 +219,27 @@ const toRange = array => {
 	return sum
 }
 
-module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, sliObj, isObject, deepMerge, deepTypeCompare, type, nPad, loopError, toRange }
+/**
+ * Replaces values in a given `templateString` with content from a given `content` object.
+ * @param {object} content Object containing key value pairs of content to fill template string with
+ * @param {string} templateString String containing templates to fill
+ * @example
+ * const content = {
+ * 	"title": "This is a title",
+ *  "info": {
+ *   "desc": "This is some info!"
+ *  }
+ * }
+ * const template = "Wow! {title}... Here is some info: {info.desc}"
+ * 
+ * fillTemplate(content, template) // => Wow! This is a title... Here is some info: This is some info!"
+ */
+const fillTemplate = (content, templateString, parent='') => {
+	for (const key in content) {
+		if (isObject(content[key])) templateString = fillTemplate(content[key], templateString, `${parent}${key}.`)
+		else templateString = templateString.replace(new RegExp(`{${parent}${key}}`, 'g'), content[key])
+	}
+	return templateString
+}
+
+module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, sliObj, isObject, deepMerge, deepTypeCompare, type, nPad, loopError, toRange, fillTemplate }

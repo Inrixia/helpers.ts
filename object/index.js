@@ -220,11 +220,30 @@ const toRange = array => {
 }
 
 /**
- * Replaces values in a given `templateString` with content from a given `content` object.
- * @param {object} content Object containing key value pairs of content to fill template string with
+ * Returns the `property` requested from `obj`
+ * @param {object} obj 
+ * @param {string} property 
+ * @example
+ * const object = {
+ * 	a: {
+ * 		child: "Hello World"
+ * 	}
+ * }
+ * const wantedProperty = "a.child"
+ * console.log(deepGet(object, wantedProperty)) // -> "Hello World"
+ */
+const deepGet = (obj, property) => {
+    const arr = property.split(".");
+    while(arr.length && (obj = obj[arr.shift()]));
+    return obj;
+}
+
+/**
+ * Replaces values in a given `templateString` with contentKeys from a given `contentKeys` object.
+ * @param {object} contentKeys Object containing key value pairs of contentKeys to fill template string with
  * @param {string} templateString String containing templates to fill
  * @example
- * const content = {
+ * const contentKeys = {
  * 	"title": "This is a title",
  *  "info": {
  *   "desc": "This is some info!"
@@ -232,14 +251,14 @@ const toRange = array => {
  * }
  * const template = "Wow! {title}... Here is some info: {info.desc}"
  * 
- * fillTemplate(content, template) // => Wow! This is a title... Here is some info: This is some info!"
+ * fillTemplate(contentKeys, template) // => Wow! This is a title... Here is some info: This is some info!"
  */
-const fillTemplate = (content, templateString, parent='') => {
-	for (const key in content) {
-		if (isObject(content[key])) templateString = fillTemplate(content[key], templateString, `${parent}${key}.`)
-		else templateString = templateString.replace(new RegExp(`{${parent}${key}}`, 'g'), content[key])
+const fillTemplate = (contentKeys, templateString, parent='') => {
+	for (const key in contentKeys) {
+		if (isObject(contentKeys[key])) templateString = fillTemplate(contentKeys[key], templateString, `${parent}${key}.`)
+		else templateString = templateString.replace(new RegExp(`{${parent}${key}}`, 'g'), contentKeys[key])
 	}
 	return templateString
 }
 
-module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, sliObj, isObject, deepMerge, deepTypeCompare, type, nPad, loopError, toRange, fillTemplate }
+module.exports = { isDuplicate, chunkArray, objectify, lObj, iObj, sliObj, isObject, deepMerge, deepTypeCompare, type, nPad, loopError, toRange, deepGet, fillTemplate }

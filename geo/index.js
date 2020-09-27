@@ -6,6 +6,21 @@ if(typeof(Number.prototype.toRad) === "undefined") {
 }
 
 /**
+ * Converts latitude or longitude to degrees, minutes & seconds.
+ * @param {number} coord Latitude or longitude coordinate
+ * 
+ * @returns {{ degrees: number, minutes: number, seconds: number }} Coordinate in degrees, minutes & seconds
+ */
+const toDMS = coord => {
+    const absolute = Math.abs(coord);
+    const degrees = Math.floor(absolute);
+    const minutesNotTruncated = (absolute - degrees) * 60;
+    const minutes = Math.floor(minutesNotTruncated);
+    const seconds = Math.floor((minutesNotTruncated - minutes) * 60);
+    return { degrees, minutes, seconds };
+}
+
+/**
  * Returns the distance between two LatLong's in kilometers
  * @param {{ latitude: number, longitude: number }} start 
  * @param {{ latitude: number, longitude: number }} end 
@@ -29,4 +44,4 @@ const getDistance = (start, end) => {
 	return earthRadius * c;
 };
 
-module.exports = { getDistance }
+module.exports = { getDistance, toDMS }

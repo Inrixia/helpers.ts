@@ -1,7 +1,7 @@
 module.exports = { 
-	wlastic: require('./elastic'), 
-	obj: require('./object'), 
-	math: require('./math'),
+	elastic: require('./elastic'),
 	geo: require('./geo'),
-	jest: require('./jest')
+	jest: require('./jest'),
+	math: require('./math'),
+	object: require('./object'),
 }

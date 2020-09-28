@@ -1,40 +1,41 @@
 const 
 Imap = require('imap'),
-MailParser = require('mailparser').MailParser,
-EventEmitter = require('events').EventEmitter;
+MailParser = require('mailparser').MailParser;
 
-module.exports = class ImapListener extends EventEmitter {
+module.exports = class ImapListener extends Imap {
 	/**
 	 * Listens for new emails, emits "mail" and "err" events.
 	 * @param {{ user: string, password: string, host: string, port: number, tls: boolean, mailbox: string, tlsOptions: {rejectUnauthorized: boolean}, markSeen: boolean }} options 
 	 */
 	constructor(options) {
-		super()
-		this.options = options
-		this.imap = new Imap(options)
+		super(options)
+		this._opts = options
 	}
 	start = () => new Promise((res, rej) => {
-		this.imap.once('ready', () => {
-			this.imap.openBox(this.options.mailbox||"INBOX", false, err => {
+		this.once('ready', () => {
+			this.openBox(this._opts.mailbox||"INBOX", false, err => {
 				if (err) rej(err)
-				this.imap.on('mail', this.fetchUnseen);
+				this.on('mail', this.fetchUnseen);
 				this.fetchUnseen()
 				res()
 			})
 		})
-		this.imap.connect();
+		this.connect();
 		
 	})
-	stop = () => this.imap.end()
+	stop = () => new Promise((res, rej) => {
+		this.on('close', res)
+		this.end()
+	})
 
 	fetchUnseen = () => {
-		this.imap.search(['UNSEEN'], (err, seachResults) => {
-			if (err) return this.emit('err', err)
+		this.search(['UNSEEN'], (err, seachResults) => {
+			if (err) return this.emit('error', err)
 			
 			if (!seachResults || seachResults.length === 0) return
 	
-			const fetch = this.imap.fetch(seachResults, {
-				markSeen: this.options.markSeen,
+			const fetch = this.fetch(seachResults, {
+				markSeen: this._opts.markSeen,
 				bodies: ''
 			});
 			fetch.on('message', msg => {
@@ -52,7 +53,7 @@ module.exports = class ImapListener extends EventEmitter {
 				});
 				msg.once('body', stream => stream.pipe(mailParser));
 			});
-			fetch.once('error', err => this.emit('err', err))
+			fetch.once('error', err => this.emit('error', err))
 		});
 	}
 }

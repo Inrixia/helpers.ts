@@ -80,27 +80,30 @@ const createIndex = (elastic, createParams, options) => new Promise(async (res, 
  * 	}
  * 	stream(elasticClient, query, timestamp, 2).on('entity', console.log) // <- Emitted results based on time moving at 2x normal speed
  */
-const stream = async (elastic, query, timestampKey, options={ timescale: 1, logProgress: false }) => {
-	if (options.timescale === undefined) options.timescale = 1
-	if (typeof options.timescale !== 'number') throw new Error('options.timescale must be a number!')
-	if (timestampKey === undefined) throw new Error('timestampKey is undefined!')
-	let timeOffset;
-	let startDate;
+const stream = (elastic, query, timestampKey, options={ timescale: 1, logProgress: false }) => {
 	const entityReceiver = new EventEmitter();
-	if (options.logProgress) console.log(`Beginning elastic scroll for entity streaming...`)
-	for await (const result of scrollSearch(elastic, query)) {
-		if (options.logProgress) console.log(`Query iteration finished, streaming ${result.hits.hits.length} entities.`)
-		if (timeOffset === undefined) {
-			timeOffset = (new Date()-new Date(result.hits.hits[0]._source[timestampKey]))
-			startDate = Date.now()
+	;(async () => {
+		if (options.timescale === undefined) options.timescale = 1
+		if (typeof options.timescale !== 'number') throw new Error('options.timescale must be a number!')
+		if (timestampKey === undefined) throw new Error('timestampKey is undefined!')
+		let timeOffset;
+		let startDate;
+		
+		if (options.logProgress) console.log(`Beginning elastic scroll for entity streaming...`)
+		for await (const result of scrollSearch(elastic, query)) {
+			if (options.logProgress) console.log(`Query iteration finished, streaming ${result.hits.hits.length} entities.`)
+			if (timeOffset === undefined) {
+				timeOffset = (new Date()-new Date(result.hits.hits[0]._source[timestampKey]))
+				startDate = Date.now()
+			}
+			for (const entity of result.hits.hits) {
+				const offsetEntityTime = new Date(entity._source[timestampKey]).getTime()+timeOffset
+				while (Date.now()+((Date.now()-startDate)*options.timescale) < offsetEntityTime) {};
+				// process.stdout.write(`Current Time: ${new Date(Date.now()+((Date.now()-startDate)*options.timescale)).toISOString()} <- ${options.timescale}x ${new Date().toISOString()}\nEntity  Time: ${new Date(offsetEntityTime).toISOString()} <-    ${new Date(entity._source[timestampKey]).toISOString()}\n\n`)
+				entityReceiver.emit('entity', entity._source)
+			}
 		}
-		for (entity of result.hits.hits) {
-			const offsetEntityTime = new Date(entity._source[timestampKey]).getTime()+timeOffset
-			while (Date.now()+((Date.now()-startDate)*options.timescale) < offsetEntityTime) {};
-			// process.stdout.write(`Current Time: ${new Date(Date.now()+((Date.now()-startDate)*options.timescale)).toISOString()} <- ${options.timescale}x ${new Date().toISOString()}\nEntity  Time: ${new Date(offsetEntityTime).toISOString()} <-    ${new Date(entity._source[timestampKey]).toISOString()}\n\n`)
-			entityReceiver.emit('entity', entity._source)
-		}
-	}
+	})();
 	return entityReceiver
 }
 

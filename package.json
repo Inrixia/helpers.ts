@@ -16,8 +16,5 @@
     "url": "https://github.com/Inrixia/Helpers/issues"
   },
   "homepage": "https://github.com/Inrixia/Helpers#readme",
-  "dependencies": {
-    "imap": "^0.8.19",
-    "mailparser": "^3.0.0"
-  }
+  "dependencies": {}
 }

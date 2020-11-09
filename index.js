@@ -4,5 +4,6 @@ module.exports = {
 	jest: require('./jest'),
 	math: require('./math'),
 	object: require('./object'),
-	conv: require('./conv')
+	conv: require('./conv'),
+	logic: require('./logic')
 }

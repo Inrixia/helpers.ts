@@ -1,10 +1,3 @@
-/** Converts numeric degrees to radians */
-if(typeof(Number.prototype.toRad) === "undefined") {
-    Number.prototype.toRad = function() {
-        return this * Math.PI / 180;
-    }
-}
-
 /**
  * Converts latitude or longitude to degrees, minutes & seconds.
  * @param {number} coord Latitude or longitude coordinate
@@ -20,28 +13,24 @@ const toDMS = coord => {
     return { degrees, minutes, seconds };
 }
 
+// Converts numeric degrees to radians
+const toRad = val => val * Math.PI / 180;
+
 /**
  * Returns the distance between two LatLong's in kilometers
- * @param {{ latitude: number, longitude: number }} start 
- * @param {{ latitude: number, longitude: number }} end 
+ * @param {[number, number]} pos1 [lat, long] coordinates
+ * @param {[number, number]} pos2 [lat, long] coordinates
  * @returns {number}
  */
-const getDistance = (start, end) => {
-	const earthRadius = 6371; // KM
-	
-    let lat1 = parseFloat(start.latitude);
-    let lat2 = parseFloat(end.latitude);
-    const lon1 = parseFloat(start.longitude);
-    const lon2 = parseFloat(end.longitude);
-
-    let dLat = (lat2 - lat1).toRad();
-    let dLon = (lon2 - lon1).toRad();
-    lat1 = lat1.toRad();
-    lat2 = lat2.toRad();
-
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+const getDistance = (pos1, pos2) => {
+    const [lat1, lon1] = pos1
+	const [lat2, lon2] = pos2
+	const R = 6371; // km
+	const dLat = toRad(lat2 - lat1);
+	const dLon = toRad(lon2 - lon1);
+	const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(toRad(lat1)) * Math.cos(toRad(lat2));
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-	return earthRadius * c;
+	return R * c;
 };
 
 module.exports = { getDistance, toDMS }

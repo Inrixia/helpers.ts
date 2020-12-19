@@ -4,17 +4,17 @@
  * 
  * @returns {{ degrees: number, minutes: number, seconds: number }} Coordinate in degrees, minutes & seconds
  */
-const toDMS = coord => {
-    const absolute = Math.abs(coord);
-    const degrees = Math.floor(absolute);
-    const minutesNotTruncated = (absolute - degrees) * 60;
-    const minutes = Math.floor(minutesNotTruncated);
-    const seconds = Math.floor((minutesNotTruncated - minutes) * 60);
-    return { degrees, minutes, seconds };
-}
+export const toDMS = (coord: number): { degrees: number, minutes: number, seconds: number } => {
+	const absolute = Math.abs(coord);
+	const degrees = Math.floor(absolute);
+	const minutesNotTruncated = (absolute - degrees) * 60;
+	const minutes = Math.floor(minutesNotTruncated);
+	const seconds = Math.floor((minutesNotTruncated - minutes) * 60);
+	return { degrees, minutes, seconds };
+};
 
 // Converts numeric degrees to radians
-const toRad = val => val * Math.PI / 180;
+export const toRad = (val: number): number => val * Math.PI / 180;
 
 /**
  * Returns the distance between two LatLong's in kilometers
@@ -22,9 +22,9 @@ const toRad = val => val * Math.PI / 180;
  * @param {[number, number]} pos2 [lat, long] coordinates
  * @returns {number}
  */
-const getDistance = (pos1, pos2) => {
-    const [lat1, lon1] = pos1
-	const [lat2, lon2] = pos2
+export const getDistance = (pos1: [number, number], pos2: [number, number]): number => {
+	const [lat1, lon1] = pos1;
+	const [lat2, lon2] = pos2;
 	const R = 6371; // km
 	const dLat = toRad(lat2 - lat1);
 	const dLon = toRad(lon2 - lon1);
@@ -32,5 +32,3 @@ const getDistance = (pos1, pos2) => {
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	return R * c;
 };
-
-module.exports = { getDistance, toDMS }

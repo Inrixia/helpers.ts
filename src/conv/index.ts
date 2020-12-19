@@ -1,5 +1,5 @@
-const a = 17.625
-const b = 243.04
+const a = 17.625;
+const b = 243.04;
 
 /**
  * Get `dryBulbTemp` from `dewBulbTemp` and `relativeHumidity`
@@ -9,11 +9,11 @@ const b = 243.04
  * 
  * @url https://bmcnoldy.rsmas.miami.edu/humidity_conversions.pdf
  */
-const dryBulbTemp = (dewPointTemp, relativeHumidity) => {
-	const lnRH = Math.log(relativeHumidity/100)
-	const aTdbTd = (a*dewPointTemp)/(b+dewPointTemp)
-	return (b*(aTdbTd-lnRH))/(a + lnRH - aTdbTd)
-}
+export const dryBulbTemp = (dewPointTemp: number, relativeHumidity: number): number => {
+	const lnRH = Math.log(relativeHumidity/100);
+	const aTdbTd = (a*dewPointTemp)/(b+dewPointTemp);
+	return (b*(aTdbTd-lnRH))/(a + lnRH - aTdbTd);
+};
 
 /**
  * Get `dewPointTemp` from `dryBulbTemp` and `relativeHumidity`
@@ -23,11 +23,11 @@ const dryBulbTemp = (dewPointTemp, relativeHumidity) => {
  * 
  * @url https://bmcnoldy.rsmas.miami.edu/humidity_conversions.pdf
  */
-const dewPointTemp = (dryBulbTemp, relativeHumidity) => {
-	const lnRH = Math.log(relativeHumidity/100)
-	const aTbT = (a*dryBulbTemp)/(b+dryBulbTemp)
-	return (b*(lnRH+aTbT))/(a - lnRH - aTbT)
-}
+export const dewPointTemp = (dryBulbTemp: number, relativeHumidity: number): number => {
+	const lnRH = Math.log(relativeHumidity/100);
+	const aTbT = (a*dryBulbTemp)/(b+dryBulbTemp);
+	return (b*(lnRH+aTbT))/(a - lnRH - aTbT);
+};
 
 /**
  * Get `relativeHumidity` from `dryBulbTemp` and `dewPointTemp`
@@ -37,10 +37,8 @@ const dewPointTemp = (dryBulbTemp, relativeHumidity) => {
  * 
  * @url https://bmcnoldy.rsmas.miami.edu/humidity_conversions.pdf
  */
-const relativeHumidity = (dryBulbTemp, dewPointTemp) => {
-	const aTdbTd = (a*dewPointTemp)/(b+dewPointTemp)
-	const aTbT = (a*dryBulbTemp)/(b+dryBulbTemp)
-	return 100*(Math.exp(aTdbTd)/Math.exp(aTbT))
-}
-
-module.exports = { dewPointTemp, dryBulbTemp, relativeHumidity }
+export const relativeHumidity = (dryBulbTemp: number, dewPointTemp: number): number => {
+	const aTdbTd = (a*dewPointTemp)/(b+dewPointTemp);
+	const aTbT = (a*dryBulbTemp)/(b+dryBulbTemp);
+	return 100*(Math.exp(aTdbTd)/Math.exp(aTbT));
+};

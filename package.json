@@ -19,6 +19,7 @@
   "homepage": "https://github.com/Inrixia/Helpers#readme",
   "devDependencies": {
     "@types/elasticsearch": "^5.0.36",
+    "@types/jest": "^26.0.19",
     "@types/node": "^14.14.9",
     "@typescript-eslint/eslint-plugin": "^4.8.2",
     "@typescript-eslint/parser": "^4.8.2",

@@ -2,8 +2,9 @@ import { deepTypeCompare, iObj, Types } from "../object";
 
 // Have to amend jest namespace for custom matchers so types dont break.
 declare global {
-    // eslint-disable-next-line @typescript-eslint/no-namespace
+    // eslint-disable-next-line @typescript-eslint/no-namespace, @typescript-eslint/no-unused-vars
     namespace jest {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         interface Matchers<R> {
 			toMatchFormat: (format: Types) => CustomMatcherResult,
 			childrenToMatchFormat: (format: Types) => jest.CustomMatcherResult

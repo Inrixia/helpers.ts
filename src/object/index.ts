@@ -36,7 +36,7 @@ export const deepMerge = (target: Record<string, any>, source: Record<string, an
 	return output;
 };
 
-export type Types = { [key: string]: string | Types | Array<string> };
+export type Types = { [key: string]: string  | string[] | Types | Types[] };
 export type TypeCompareResult = boolean | { expectedType: string, received: string, location: string }
 
 /**

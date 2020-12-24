@@ -164,20 +164,22 @@ export const iObj = (obj: unknown, ...options: InspectOptions): string => {
  */
 export const sliObj = (obj: unknown, ...options: InspectOptions): string => iObj(obj, ...options).replace(/\r?\n/g, " ").replace(/  +/g, " ");
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type UnknownFunction = (...args: any[]) => Promise<unknown>
+type ErrorHandler = (err: Error) => Promise<void>
 /**
  * Recursively runs `func` and handles errors with `errorHandler` until `func` successfully finishes.
- * @param {Function} func Function to execute
- * @param {(err: Error) => void} errorHandler Function to execute when a error occours
- * @returns {*} Return value of `func` on success
+ * @param func Function to execute
+ * @param errorHandler Function to execute when a error occours
+ * @returns Return value of `func` on success
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-export const loopError = (func: (...args: unknown[]) => Promise<unknown>, errorHandler = (err: Error) => new Promise(r => r(err))): Promise<unknown> => new Promise((resolve, reject) => {
+export const loopError = <F extends UnknownFunction>(func: F, errorHandler: ErrorHandler = (err: Error) => new Promise((_res, r) => r(err))): ReturnType<F> => new Promise(resolve => {
 	func()
 		.then(resolve)
 		.catch(async err => {
 			errorHandler(err).then(() => resolve(loopError(func, errorHandler)));
 		});
-});
+}) as ReturnType<F>;
 
 /**
  * Pad a number with 0's

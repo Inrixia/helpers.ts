@@ -6,7 +6,7 @@
   "types": "index.d.ts",
   "scripts": {
     "tsc": "copy /Y package.json dist && tsc",
-    "pub": "npm run tsc && cd ./dist && npm publish"
+    "send": "npm run tsc && cd ./dist && npm publish"
   },
   "repository": {
     "type": "git",

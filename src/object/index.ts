@@ -18,18 +18,18 @@ export const isDuplicate = (key: unknown): boolean => {
 export const isObject = (item: unknown): boolean => item !== undefined && typeof item === "object" && !Array.isArray(item);
   
 /**
- * Deep merge objects into target.
+ * Deep merge objects into target. Without modifying target.
  * @param target
  * @param source
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const deepMerge = (target: Record<string, any>, source: Record<string, any>): Record<string, unknown> => {
+export const deepMerge = <T extends S, S extends Record<string, any> = Partial<T>>(target: T, source: S): T & S => {
 	const output = Object.assign({}, target);
 	if (isObject(target) && isObject(source)) {
 		Object.keys(source).forEach(key => {
 			if (isObject(source[key])) {
 				if (!(key in target)) Object.assign(output, { [key]: source[key] });
-				else output[key] = deepMerge(target[key], source[key]);
+				else (output as Record<string, unknown>)[key] = deepMerge(target[key], source[key]);
 			} else Object.assign(output, { [key]: source[key] });
 		});
 	}

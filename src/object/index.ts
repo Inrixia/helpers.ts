@@ -321,3 +321,27 @@ export const recursiveUpdate = (targetObject: Record<string, any>, newObject: Re
 		else if (options.setDefined) targetObject[key] = newObject[key];
 	}
 };
+
+/**
+ * Set the types of a given `object` based on the types of an identical `types` object. Usful in conjunction with `getEnv` to convert a object only containing strings/objects to actual types.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const rebuildTypes = <O extends Record<string, any>, T extends O>(object: O, types: T): void => {
+	for (const key in object) {
+		if (types[key] === undefined) continue;
+		switch (typeof types[key]) {
+		case "number":
+			(object[key] as number) = +object[key];
+			break;
+		case "string":
+			object[key] = object[key].toString();
+			break;
+		case "boolean":
+			(object[key] as boolean) = object[key] === "true";
+			break;
+		default:
+			rebuildTypes(object[key], types[key]);
+			break;
+		}
+	}
+};

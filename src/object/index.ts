@@ -263,3 +263,61 @@ export const fillTemplate = (contentKeys: ContentTemplate, templatestring: strin
 	}
 	return templatestring;
 };
+
+/**
+ * Converts process.env variables into a object
+ * @example process.env["some_subproperty"] = "hello"
+ * returns { some: { subProperty: "hello" } }
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getEnv = (): Record<string, any> => {
+	// Define our return object env variables are applied to.
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const envObject = {} as Record<string, any>;
+	// Iterate over env keys
+	for (const envKey in process.env) {
+		// Set our reference object to be equal to the envObject to begin with.
+		let objRef = envObject;
+		// Reference to parent object to allow reassigning values that should be objects.
+		let pObjRef: [Record<string, unknown>, string] | undefined = undefined;
+		// Break apart the envKey into its keys. Ex some_subProperty = ["some", "subProperty"]
+		const keys = envKey.split("_");
+		// For every key except the last...
+		for (let i = 0; i < keys.length-1; i++) {
+			// Set the key on the objRef to a empty object if its undefined.
+			if (!isObject(objRef)) {
+				// If objRef is not a object. Use the parent object to set it to a object containing itself as _.
+				if (pObjRef !== undefined) objRef = pObjRef[0][pObjRef[1]] = { _: objRef };
+				pObjRef = [objRef, keys[i]];
+			} else {
+				pObjRef = [objRef, keys[i]];
+				objRef = objRef[keys[i]] ??= {};
+			}
+		}
+		// Set the last key to equal the original value
+		// If objRef is not a object. Use the parent object to set it to a object containing itself as _.
+		if (!isObject(objRef) && pObjRef !== undefined) objRef = pObjRef[0][pObjRef[1]] = { _: objRef };
+		objRef[keys[keys.length-1]] = process.env[envKey];
+	}
+	return envObject;
+};
+
+type RecursiveUpdateOptions = { setUndefined?: boolean, setDefined?: boolean }
+
+/**
+ * Recursively update properties of a object with another.
+ * @param targetObject Object to update.
+ * @param newObject Object with new values to write to `targetObject`.
+ * @param options.setUndefined Defaults to `true` Set properties that are undefined on `targetObject`.
+ * @param options.setDefined Defaults to `false`. Overwrite properties that are not undefined on `targetObject`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const recursiveUpdate = (targetObject: Record<string, any>, newObject: Record<string, any>, options: RecursiveUpdateOptions = { setUndefined: true, setDefined: false }): void => {
+	if (!isObject(targetObject)) throw new Error("targetObject is not an object!");
+	if (!isObject(newObject)) throw new Error("newObject is not an object!");
+	for (const key in newObject) {
+		if (isObject(targetObject[key]) && isObject(newObject[key])) recursiveUpdate(targetObject[key], newObject[key]);
+		else if (options.setUndefined && targetObject[key] === undefined) targetObject[key] = newObject[key];
+		else if (options.setDefined) targetObject[key] = newObject[key];
+	}
+};

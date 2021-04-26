@@ -337,7 +337,7 @@ export const rebuildTypes = <O extends Record<string, any>, T extends O>(object:
 			object[key] = object[key].toString();
 			break;
 		case "boolean":
-			(object[key] as boolean) = object[key] === "true";
+			(object[key] as boolean) = object[key] === true || object[key] === "true";
 			break;
 		default:
 			rebuildTypes(object[key], types[key]);

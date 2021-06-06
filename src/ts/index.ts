@@ -15,6 +15,17 @@ type TupleOf<T, N extends number> = number extends N ? T[] : {
 export type RangeOf<N extends number> = Partial<TupleOf<unknown, N>>["length"];
 export type NumRangeInclusive<FROM extends number, TO extends number> = Exclude<RangeOf<TO>, RangeOf<FROM>> | FROM
 
+export type NumLookup = {
+	[K in RangeOf<999>]: K
+}
+
+/**
+ * Converts a string literal into its numeric type representation. Can only do numbers from 0-999.
+ */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+export type ToNum<S> = S extends `${infer A}${infer B}` ? A extends "0" ? ToNum<B> : NumLookup[S] : never
+
 export type ToStrUnion<T extends string | number | bigint | boolean | null | undefined> = `${T}`;
 
 export type FirstChar<T> = T extends `${infer C}${string}` ? C : never;

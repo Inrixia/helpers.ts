@@ -24,7 +24,7 @@ export type NumLookup = {
  */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-export type ToNum<S> = S extends `${infer A}${infer B}` ? A extends "0" ? ToNum<B> : NumLookup[S] : never
+export type ToNum<S> = S extends `${infer A}${infer B}` ? A extends "0" ? B extends "" ? NumLookup[S] : ToNum<B> : NumLookup[S] : never
 
 export type ToStrUnion<T extends string | number | bigint | boolean | null | undefined> = `${T}`;
 

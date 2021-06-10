@@ -64,3 +64,10 @@ type __MinusOne<S = string> = S extends `${infer A}${infer B}` ? `${Decrement<B>
 
 
 export type TimesTen<S> = S extends string | number ? `${S}0` : never;
+
+/**
+ * Returns a type guard to validate a passed key is a keyof given record
+ */
+export const generateIsKeyof = <T extends Record<string | number | symbol, unknown>>(record: T) => (key: keyof T | string | number | symbol): key is keyof T => {
+	return record[key as keyof T] !== undefined;
+};

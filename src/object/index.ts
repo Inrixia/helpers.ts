@@ -222,8 +222,9 @@ export const toRange = (array: Array<number>): string => {
 
 /**
  * Returns the `property` requested from `obj`
- * @param {object} obj 
- * @param {string} property 
+ * @param obj 
+ * @param property 
+ * @param delimiter 
  * @example
  * const object = {
  * 	a: {
@@ -233,8 +234,8 @@ export const toRange = (array: Array<number>): string => {
  * const wantedProperty = "a.child"
  * console.log(deepGet(object, wantedProperty)) // -> "Hello World"
  */
-export const deepGet = (obj: Record<string, unknown>, property: string): unknown => {
-	const arr = property.split(".");
+export const deepGet = (obj: Record<string, unknown>, property: string, delimiter = "."): unknown => {
+	const arr = property.split(delimiter);
 	while (arr.length && (obj = obj[arr.shift() as string] as Record<string, unknown>));
 	return obj;
 };

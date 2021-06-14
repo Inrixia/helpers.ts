@@ -1,3 +1,5 @@
+export { ToNum } from "./ToNum";
+
 export type ValueOf<T> = T extends unknown[] | readonly unknown[] ? T[number] : T[keyof T];
 
 type BuildPowersOf2LengthArrays<N extends number, R extends never[][]> = R[0][N] extends never ? R : BuildPowersOf2LengthArrays<N, [[...R[0], ...R[0]], ...R]>;
@@ -14,17 +16,6 @@ type TupleOf<T, N extends number> = number extends N ? T[] : {
 }[N]
 export type RangeOf<N extends number> = Partial<TupleOf<unknown, N>>["length"];
 export type NumRangeInclusive<FROM extends number, TO extends number> = Exclude<RangeOf<TO>, RangeOf<FROM>> | FROM
-
-export type NumLookup = {
-	[K in RangeOf<999>]: K
-}
-
-/**
- * Converts a string literal into its numeric type representation. Can only do numbers from 0-999.
- */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-export type ToNum<S> = S extends `${infer A}${infer B}` ? A extends "0" ? B extends "" ? NumLookup[S] : ToNum<B> : NumLookup[S] : never
 
 export type ToStrUnion<T extends string | number | bigint | boolean | null | undefined> = `${T}`;
 

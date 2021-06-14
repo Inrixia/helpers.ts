@@ -1,5 +1,3 @@
-export { ToNum } from "./ToNum";
-
 export type ValueOf<T> = T extends unknown[] | readonly unknown[] ? T[number] : T[keyof T];
 
 type BuildPowersOf2LengthArrays<N extends number, R extends never[][]> = R[0][N] extends never ? R : BuildPowersOf2LengthArrays<N, [[...R[0], ...R[0]], ...R]>;

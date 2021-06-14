@@ -182,24 +182,6 @@ export const loopError = <F extends UnknownFunction>(func: F, errorHandler: Erro
 }) as ReturnType<F>;
 
 /**
- * Pad a number with 0's
- * @param {number} num Number to pad.
- * @param {number} zeros Number of digits returned number should have.
- * 
- * @returns {string} Padded number
- * @example
- * let paddedNumber = nPad(5)
- * // paddedNumber = "05"
- * let triplePaddedNumber = nPad(6, 3)
- * // triplePaddedNumber = "006"
- */
-export const nPad = (num: number|string, zeros=2): string => {
-	num = num.toString();
-	while (num.length < zeros) num = "0"+num;
-	return num;
-};
-
-/**
  * @param {Array<number>} array
  * @returns {string} string containing ranges of numbers.
  * @example

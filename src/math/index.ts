@@ -1,9 +1,9 @@
 /**
  * Calculates the difference between two angles (0°-360°), `angle1` & `angle2` returned result is in decimal degrees and is signed.
- * @param {number} angle1 First angle to compare
- * @param {number} angle2 Second angle to compare
- * @param {boolean} signed If the result is signed or absolute
- * @returns {number} The difference in degrees
+ * @param angle1 First angle to compare
+ * @param angle2 Second angle to compare
+ * @param signed If the result is signed or absolute
+ * @returns The difference in degrees
  */
 export const angleDifference = (angle1: number, angle2: number, signed=true): number => {
 	let difference = Math.abs(angle1 - angle2) % 360; 
@@ -16,8 +16,8 @@ export const angleDifference = (angle1: number, angle2: number, signed=true): nu
 
 /**
  * Converts `angle` to 0°-360°
- * @param {number} angle 
- * @returns {number} `angle` in 0-360°
+ * @param angle 
+ * @returns `angle` in 0-360°
  */
 export const to360 = (angle: number): number => {
 	angle = angle%360;
@@ -26,11 +26,29 @@ export const to360 = (angle: number): number => {
 
 /**
  * Rounds a number to `digits` decimal places.
- * @param {number} num Number to round
- * @param {number} digits Decimal places to round to
- * @returns {number} Rounded number
+ * @param num Number to round
+ * @param digits Decimal places to round to
+ * @returns Rounded number
  */
 export const qRnd = (num: number, digits = 0): number => {
 	digits = 10**digits;
 	return ~~(num*digits)/digits;
+};
+
+/**
+ * Pad a number with 0's
+ * @param num Number to pad.
+ * @param zeros Number of digits returned number should have.
+ * 
+ * @returns {string} Padded number
+ * @example
+ * let paddedNumber = nPad(5)
+ * // paddedNumber = "05"
+ * let triplePaddedNumber = nPad(6, 3)
+ * // triplePaddedNumber = "006"
+ */
+export const nPad = (num: number|string, zeros=2): string => {
+	num = num.toString();
+	while (num.length < zeros) num = "0"+num;
+	return num;
 };

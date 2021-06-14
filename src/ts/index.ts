@@ -20,6 +20,11 @@ export type ToStrUnion<T extends string | number | bigint | boolean | null | und
 export type FirstChar<T> = T extends `${infer C}${string}` ? C : never;
 export type LastChar<T> = T extends `${string}${infer C}` ? C : never;
 
+/**
+ * Takes in a string padded with 0's and returns the unpadded string;
+ */
+export type UnPad<N extends string> = N extends `0${infer A}` ? UnPad<A> : N;
+
 type Zero<S, Z> = S extends `${infer A}${infer B}` ? B extends "" ? Z : `${Zero<A, Z>}${Zero<B, Z>}` : ""
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ZZero<S, Z> = S extends `${infer _A}${infer B}` ? Zero<B, Z> : ""

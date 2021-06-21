@@ -1,25 +1,25 @@
-export class Promize {
-	public p!: Promise<unknown>;
-	res!: (value?: unknown) => void;
+export class Promize<T> {
+	public p!: Promise<T>;
+	res!: (value: T) => void;
 	rej!: (reason?: any) => void;
 
 	/**
 	 * Returns a new instance of a `Promize`, a externally resolvable Promise.
-	 * @param resolved Sets the internal promise to be resolved on creation.
+	 * @param resValue If not undefined, resolves the internal promise with given value on creation.
 	 */
-	constructor(resolved = false) {
-		this.set(resolved);
+	constructor(resValue?: T) {
+		this.set(resValue);
 	}
 
 	/**
-	 * Set the promise
-	 * @param resolved Resolve on creation.
+	 * Recreate the promise
+	 * @param resValue If not undefined, resolves the internal promise with given value on creation.
 	 */
-	set(resolved = false): void {
-		this.p = new Promise((res, rej) => {
+	set(resValue?: T): void {
+		this.p = new Promise<T>((res, rej) => {
 			this.res = res;
 			this.rej = rej;
 		});
-		if (resolved === true) this.res();
+		if (resValue !== undefined) this.res(resValue);
 	}
 }

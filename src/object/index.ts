@@ -225,10 +225,10 @@ export const toRange = (array: Array<number>): string => {
  * const wantedProperty = "a.child"
  * console.log(deepGet(object, wantedProperty)) // -> "Hello World"
  */
-export const deepGet = <T = unknown>(obj: Record<string, unknown>, property: string, delimiter = "."): T | unknown => {
+export const deepGet = <T = unknown>(obj: Record<string, unknown>, property: string, delimiter = "."): T | undefined => {
 	const arr = property.split(delimiter);
 	while (arr.length && (obj = obj[arr.shift() as string] as Record<string, unknown>));
-	return obj;
+	return obj as T;
 };
 
 type ContentTemplate = { [key: string]: string | ContentTemplate };

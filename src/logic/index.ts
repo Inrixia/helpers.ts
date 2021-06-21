@@ -5,17 +5,17 @@ export class Promize {
 
 	/**
 	 * Returns a new instance of a `Promize`, a externally resolvable Promise.
-	 * @param {boolean} resolved Sets the internal promise to be resolved on creation.
+	 * @param resolved Sets the internal promise to be resolved on creation.
 	 */
 	constructor(resolved = false) {
 		this.set(resolved);
 	}
-	
+
 	/**
 	 * Set the promise
-	 * @param {boolean} resolved Resolve on creation.
+	 * @param resolved Resolve on creation.
 	 */
-	set (resolved = false): void {
+	set(resolved = false): void {
 		this.p = new Promise((res, rej) => {
 			this.res = res;
 			this.rej = rej;

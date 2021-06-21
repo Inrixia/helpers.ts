@@ -1,4 +1,5 @@
-export type ValueOf<T> = T extends unknown[] | readonly unknown[] ? T[number] : T[keyof T];
+export type ValueOf<T> = T[keyof T];
+export type ValueOfA<T extends unknown[] | readonly unknown[]> = T[number];
 
 type BuildPowersOf2LengthArrays<N extends number, R extends never[][]> = R[0][N] extends never ? R : BuildPowersOf2LengthArrays<N, [[...R[0], ...R[0]], ...R]>;
 type ConcatLargestUntilDone<N extends number, R extends never[][], B extends never[]> =

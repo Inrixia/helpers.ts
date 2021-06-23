@@ -99,6 +99,7 @@ export type TimesTen<S> = S extends string | number ? `${S}0` : never;
  */
 export const generateIsKeyof =
 	<T extends Record<string | number | symbol, unknown>>(record: T) =>
-	(key: keyof T | string | number | symbol): key is keyof T => {
-		return record[key as keyof T] !== undefined;
-	};
+	(key: any): key is keyof T =>
+		key in record;
+
+export const isDefined = <T>(O: T | undefined): O is T => O !== undefined;

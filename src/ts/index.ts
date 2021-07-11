@@ -1,6 +1,8 @@
 export type ValueOf<T> = T[keyof T];
 export type ValueOfA<T extends unknown[] | readonly unknown[]> = T[number];
 
+export type UnionToIntersection<T> = (T extends any ? (x: T) => any : never) extends (x: infer R) => any ? R : never;
+
 export type RecursivePartial<T> = {
 	[P in keyof T]?: T[P] extends (infer U)[] ? RecursivePartial<U>[] : T[P] extends object ? RecursivePartial<T[P]> : T[P];
 };

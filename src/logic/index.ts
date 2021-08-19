@@ -1,3 +1,6 @@
+import { promisify } from "util";
+export const sleep = promisify(setTimeout);
+
 export class Promize<T> {
 	public p!: Promise<T>;
 	res!: (value: T) => void;
@@ -23,3 +26,23 @@ export class Promize<T> {
 		if (resValue !== undefined) this.res(resValue);
 	}
 }
+
+export const retry = <T>(func: () => Promise<T>, options: { printOnErr?: string; timeoutMultiplier?: 1000; maxRetries?: 10 }): (() => Promise<T>) => {
+	let retryCount = 0;
+	options.timeoutMultiplier ??= 1000;
+	options.maxRetries ??= 10;
+	const tryAgain = async (): Promise<T> => {
+		try {
+			return await func();
+		} catch (e) {
+			if (retryCount < options.maxRetries!) {
+				retryCount++;
+				await sleep(Math.random() * options.timeoutMultiplier!);
+				return tryAgain();
+			}
+			if (options.printOnErr !== undefined) console.log(options.printOnErr);
+			throw e;
+		}
+	};
+	return tryAgain;
+};

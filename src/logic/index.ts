@@ -27,7 +27,7 @@ export class Promize<T> {
 	}
 }
 
-export const retry = <T>(func: () => Promise<T>, options: { printOnErr?: string; timeoutMultiplier?: 1000; maxRetries?: 10 }): (() => Promise<T>) => {
+export const retry = <T>(func: () => Promise<T>, options: { printOnErr?: string; timeoutMultiplier?: number; maxRetries?: number }): (() => Promise<T>) => {
 	let retryCount = 0;
 	options.timeoutMultiplier ??= 1000;
 	options.maxRetries ??= 10;

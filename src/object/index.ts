@@ -107,7 +107,7 @@ export const type = (item: unknown): string => {
  *
  * @returns {Array<Array>} Array containing array chunks.
  */
-export const chunkArray = <T extends Array<unknown>>(array: T, chunkSize: number): Array<T> => {
+export const chunkArray = <T extends unknown[] | string>(array: T, chunkSize: number): Array<T> => {
 	if (array.length < chunkSize) return [array];
 	let i, j;
 	const returnArray: Array<T> = [];

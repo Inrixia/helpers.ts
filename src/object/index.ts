@@ -314,7 +314,7 @@ export const recursiveUpdate = (
 	for (const key in newObject) {
 		if (isObject(targetObject[key]) && isObject(newObject[key])) recursiveUpdate(targetObject[key], newObject[key]);
 		else if (options.setUndefined && targetObject[key] === undefined) targetObject[key] = newObject[key];
-		else if (options.setDefined) targetObject[key] = newObject[key];
+		else if (options.setDefined && targetObject[key] !== undefined) targetObject[key] = newObject[key];
 	}
 };
 

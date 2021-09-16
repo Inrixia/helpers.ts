@@ -37,7 +37,7 @@ export const retry = <T>(func: () => Promise<T>, options: { printOnErr?: string;
 		} catch (e) {
 			if (retryCount < options.maxRetries!) {
 				retryCount++;
-				await sleep(Math.random() * options.timeoutMultiplier!);
+				if (options.timeoutMultiplier! > 0) await sleep(Math.random() * options.timeoutMultiplier!);
 				return tryAgain();
 			}
 			if (options.printOnErr !== undefined) console.log(options.printOnErr);

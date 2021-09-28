@@ -27,7 +27,7 @@ export class Promize<T> {
 	}
 }
 
-export const retry = <T>(func: () => Promise<T>, options: { printOnErr?: string; timeoutMultiplier?: number; maxRetries?: number }): (() => Promise<T>) => {
+export const retry = <T>(func: () => Promise<T>, options: { traceOnErr?: string; timeoutMultiplier?: number; maxRetries?: number }): (() => Promise<T>) => {
 	let retryCount = 0;
 	options.timeoutMultiplier ??= 1000;
 	options.maxRetries ??= 10;
@@ -40,7 +40,7 @@ export const retry = <T>(func: () => Promise<T>, options: { printOnErr?: string;
 				if (options.timeoutMultiplier! > 0) await sleep(Math.random() * options.timeoutMultiplier!);
 				return tryAgain();
 			}
-			if (options.printOnErr !== undefined) console.log(options.printOnErr);
+			if (options.traceOnErr !== undefined) console.trace(options.traceOnErr);
 			throw e;
 		}
 	};

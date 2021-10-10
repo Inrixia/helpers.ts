@@ -2,11 +2,21 @@
 	"name": "@inrixia/helpers",
 	"version": "1.22.5",
 	"description": "Helper functions for various projects",
-	"main": "index.js",
-	"types": "index.d.ts",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		"./*": "./dist/*.js"
+	},
+	"typesVersions": {
+		"*": {
+			"*": [
+				"dist/*"
+			]
+		}
+	},
 	"scripts": {
-		"tsc": "rmdir dist /s /Q && mkdir dist && copy /Y package.json dist && tsc",
-		"send": "npm run tsc && cd ./dist && npm publish"
+		"tsc": "tsc",
+		"send": "npm run tsc && npm publish"
 	},
 	"repository": {
 		"type": "git",
@@ -20,11 +30,11 @@
 	"homepage": "https://github.com/Inrixia/Helpers#readme",
 	"devDependencies": {
 		"@types/elasticsearch": "^5.0.38",
-		"@types/jest": "^27.0.1",
-		"@types/node": "^16.7.13",
-		"@typescript-eslint/eslint-plugin": "^4.31.0",
-		"@typescript-eslint/parser": "^4.31.0",
-		"eslint": "^7.32.0",
-		"typescript": "^4.4.2"
+		"@types/jest": "^27.0.2",
+		"@types/node": "^16.10.3",
+		"@typescript-eslint/eslint-plugin": "^4.33.0",
+		"@typescript-eslint/parser": "^4.33.0",
+		"eslint": "^8.0.0",
+		"typescript": "^4.4.3"
 	}
 }

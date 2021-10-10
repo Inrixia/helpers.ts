@@ -1,0 +1,6 @@
+src/
+.vs/
+.vscode/
+
+tsconfig.json
+.eslintrc.js

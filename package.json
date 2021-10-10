@@ -5,12 +5,12 @@
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
-		"./*": "./dist/*.js"
+		"./*": "./dist/*/index.js"
 	},
 	"typesVersions": {
 		"*": {
 			"*": [
-				"dist/*"
+				"./dist/*/index.d.js"
 			]
 		}
 	},

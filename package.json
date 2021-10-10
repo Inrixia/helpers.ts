@@ -1,6 +1,6 @@
 {
 	"name": "@inrixia/helpers",
-	"version": "1.22.6",
+	"version": "1.22.7",
 	"description": "Helper functions for various projects",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",

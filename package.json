@@ -2,21 +2,11 @@
 	"name": "@inrixia/helpers",
 	"version": "1.22.8",
 	"description": "Helper functions for various projects",
-	"main": "./dist/index.js",
-	"types": "./dist/index.d.ts",
-	"exports": {
-		"./*": "./dist/*/index.js"
-	},
-	"typesVersions": {
-		"*": {
-			"*": [
-				"./dist/*/index.d.js"
-			]
-		}
-	},
+	"main": "index.js",
+	"types": "index.d.ts",
 	"scripts": {
-		"tsc": "tsc",
-		"send": "npm run tsc && npm publish"
+		"tsc": "rmdir dist /s /Q && mkdir dist && copy /Y package.json dist && tsc",
+		"send": "npm run tsc && cd ./dist && npm publish"
 	},
 	"repository": {
 		"type": "git",

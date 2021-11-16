@@ -28,20 +28,21 @@ export class Promize<T> {
 }
 
 export const retry = <T>(
-	func: () => Promise<T>,
-	options: { onErr?: (error: unknown, retryCount: number) => void; timeoutMultiplier?: number; maxRetries?: number }
+	func: () => Promise<T> | T,
+	options?: { onErr?: (error: unknown, retryCount: number) => void; timeoutMultiplier?: number; maxRetries?: number }
 ): (() => Promise<T>) => {
 	let retryCount = 0;
+	options ??= {};
 	options.timeoutMultiplier ??= 1000;
 	options.maxRetries ??= 10;
 	const tryAgain = async (): Promise<T> => {
 		try {
 			return await func();
 		} catch (e) {
-			if (options.onErr !== undefined) options.onErr(e, retryCount);
-			if (retryCount < options.maxRetries!) {
+			if (options!.onErr !== undefined) options!.onErr(e, retryCount);
+			if (retryCount < options!.maxRetries!) {
 				retryCount++;
-				if (options.timeoutMultiplier! > 0) await sleep(Math.random() * options.timeoutMultiplier!);
+				if (options!.timeoutMultiplier! > 0) await sleep(Math.random() * options!.timeoutMultiplier!);
 				return tryAgain();
 			}
 			throw e;

@@ -273,7 +273,8 @@ export const getEnv = (): Record<string, any> => {
 		// Reference to parent object to allow reassigning values that should be objects.
 		let pObjRef: [Record<string, unknown>, string] | undefined = undefined;
 		// Break apart the envKey into its keys. Ex some_subProperty = ["some", "subProperty"]
-		const keys = envKey.split("_");
+		// This regex handles cases where _ is in the key, it only matches the first _ per key allowing for keys with one or more _ in them
+		const keys = envKey.split(/(?<=[^__])_/g);
 		// For every key except the last...
 		for (let i = 0; i < keys.length - 1; i++) {
 			// Set the key on the objRef to a empty object if its undefined.

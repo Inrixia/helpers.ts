@@ -312,7 +312,7 @@ export const recursiveUpdate = (
 	if (!isObject(targetObject)) throw new Error("targetObject is not an object!");
 	if (!isObject(newObject)) throw new Error("newObject is not an object!");
 	for (const key in newObject) {
-		if (isObject(targetObject[key]) && isObject(newObject[key])) recursiveUpdate(targetObject[key], newObject[key]);
+		if (isObject(targetObject[key]) && isObject(newObject[key])) recursiveUpdate(targetObject[key], newObject[key], options);
 		else if (options.setUndefined && targetObject[key] === undefined) targetObject[key] = newObject[key];
 		else if (options.setDefined && targetObject[key] !== undefined) targetObject[key] = newObject[key];
 	}

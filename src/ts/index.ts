@@ -29,3 +29,8 @@ export const generateIsKeyof =
 		key in record;
 
 export const isDefined = <T>(O: T | undefined): O is T => O !== undefined;
+
+export type RequiredKeys<T> = keyof T extends infer K extends PropertyKey ? (K extends K ? (T extends Record<K, unknown> ? K : never) : never) : never;
+export type OptionalKeys<T> = Exclude<keyof T, RequiredKeys<T>>;
+export type RequiredOnly<T> = Pick<T, RequiredKeys<T> & keyof T>;
+export type OptionalOnly<T> = Pick<T, OptionalKeys<T> & keyof T>;

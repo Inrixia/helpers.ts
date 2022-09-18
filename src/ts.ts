@@ -1,5 +1,5 @@
-export type { RangeOf, NumRangeInclusive } from "./numRange";
-export type { AddOne, MinusOne, TimesTen } from "./math";
+export type { RangeOf, NumRangeInclusive } from "./ts/numRange.js";
+export type { AddOne, MinusOne, TimesTen } from "./ts/math.js";
 
 export type ValueOf<T> = T[keyof T];
 export type ValueOfA<T extends unknown[] | readonly unknown[]> = T[number];
@@ -34,3 +34,19 @@ export type RequiredKeys<T> = keyof T extends infer K extends PropertyKey ? (K e
 export type OptionalKeys<T> = Exclude<keyof T, RequiredKeys<T>>;
 export type RequiredOnly<T> = Pick<T, RequiredKeys<T> & keyof T>;
 export type OptionalOnly<T> = Pick<T, OptionalKeys<T> & keyof T>;
+
+export type Constructor = abstract new (...args: any) => any;
+export type Primitives = StringConstructor | NumberConstructor | BooleanConstructor;
+export type Primitive<T> = T extends String
+	? string
+	: T extends StringConstructor
+	? string
+	: T extends Number
+	? number
+	: T extends NumberConstructor
+	? number
+	: T extends Boolean
+	? boolean
+	: T extends BooleanConstructor
+	? boolean
+	: T;

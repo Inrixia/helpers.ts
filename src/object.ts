@@ -41,11 +41,10 @@ export type TypeCompareResult = boolean | { expectedType: string; received: stri
 
 /**
  * Take in a target `object` and a `types` object with identical keys but values as array of types those keys should be.
- * @param {object} target Object
- * @param {object} types Object identical to `target` but values are types
- * @returns {{ location: string, expected: string, got: object }|boolean} `object` if the types dont match. `True` if they do.
+ * @param target Object
+ * @param types Object identical to `target` but values are types
+ * @returns `object` if the types dont match. `True` if they do.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const deepTypeCompare = (target: Record<string, any>, types: Types, location = "target"): TypeCompareResult => {
 	if (!(isObject(target) && isObject(types))) return { location, expectedType: "object", received: `${target}:${type(target)}` };
 	for (const key in target) {
@@ -57,15 +56,15 @@ export const deepTypeCompare = (target: Record<string, any>, types: Types, locat
 			if (Array.isArray(target[key]) && Array.isArray(types[key])) {
 				// target.property and types.property are arrays
 				// Check each item in target.property against types.property[0]
-				const childCheckType = types[key] as Array<Types>[0];
+				const childCheckType = types[key];
 				for (const targetItem of target[key]) {
 					const targetType = type(targetItem);
 					// If the array entry is a object then check it
-					if (targetType === "object") return deepTypeCompare(targetItem, childCheckType, `${location}.${key}`);
-					else return compareTwo(childCheckType as unknown as string, targetItem, `${location}.${key}`);
+					if (targetType === "object") return deepTypeCompare(targetItem, <Types>childCheckType, `${location}.${key}`);
+					else return compareTwo(<string | string[]>childCheckType, targetItem, `${location}.${key}`);
 				}
 			} else {
-				const same = compareTwo(types[key] as unknown as string | Array<string>, target[key], `${location}.${key}`);
+				const same = compareTwo(<string | string[]>types[key], target[key], `${location}.${key}`);
 				if (same !== true) return same;
 			}
 		}

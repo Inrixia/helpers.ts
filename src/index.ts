@@ -1,7 +1,9 @@
-export * as elastic from "./elastic";
-export * as geo from "./geo";
-export * as jest from "./jest";
-export * as math from "./math";
-export * as object from "./object";
-export * as conv from "./conv";
-export * as logic from "./logic";
+export * from "./conv.js";
+export * from "./elastic.js";
+export * from "./geo.js";
+export * from "./logic.js";
+export * from "./math.js";
+export * from "./object.js";
+export * from "./react.js";
+export * from "./test.js";
+export * from "./ts.js";

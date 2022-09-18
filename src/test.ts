@@ -5,8 +5,7 @@ import { Constructor, Primitive } from "./ts.js";
 expect.extend(matchers);
 export const eExpect = <Vi.ExpectStatic & Matchers>expect;
 
-declare global {
-	namespace Vi {
+declare module "vitest" {
 		interface ExpectStatic extends Chai.ExpectStatic, AsymmetricMatchersContaining {
 			any<C>(constructor: C extends Constructor ? C : any): C extends Constructor ? Primitive<InstanceType<C>> : C;
 		}
@@ -16,4 +15,3 @@ declare global {
 			stringMatching<T extends string>(expected: T): T;
 		}
 	}
-}

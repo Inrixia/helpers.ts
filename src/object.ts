@@ -1,4 +1,5 @@
 import util from "util";
+import { UnknownRecord } from "./ts.js";
 
 /**
  * Checks if `key` has been seen before.
@@ -15,21 +16,20 @@ export const isDuplicate = (key: unknown): boolean => {
  * @param item
  * @returns {boolean}
  */
-export const isObject = (item: unknown): boolean => item !== undefined && typeof item === "object" && !Array.isArray(item);
+export const isObject = (item: unknown): item is UnknownRecord => item !== undefined && typeof item === "object" && !Array.isArray(item);
 
 /**
  * Deep merge objects into target. Without modifying target.
  * @param target
  * @param source
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const deepMerge = <T extends S, S extends Record<string, any> = Partial<T>>(target: T, source: S): T & S => {
+export const deepMerge = <T extends S, S extends UnknownRecord = Partial<T>>(target: T, source: S): T & S => {
 	const output = Object.assign({}, target);
 	if (isObject(target) && isObject(source)) {
 		Object.keys(source).forEach((key) => {
 			if (isObject(source[key])) {
 				if (!(key in target)) Object.assign(output, { [key]: source[key] });
-				else (output as Record<string, unknown>)[key] = deepMerge(target[key], source[key]);
+				else (<UnknownRecord>output)[key] = deepMerge(<UnknownRecord>target[key], <UnknownRecord>source[key]);
 			} else Object.assign(output, { [key]: source[key] });
 		});
 	}
@@ -45,19 +45,20 @@ export type TypeCompareResult = boolean | { expectedType: string; received: stri
  * @param types Object identical to `target` but values are types
  * @returns `object` if the types dont match. `True` if they do.
  */
-export const deepTypeCompare = (target: Record<string, any>, types: Types, location = "target"): TypeCompareResult => {
+export const deepTypeCompare = (target: UnknownRecord, types: Types, location = "target"): TypeCompareResult => {
 	if (!(isObject(target) && isObject(types))) return { location, expectedType: "object", received: `${target}:${type(target)}` };
 	for (const key in target) {
-		if (isObject(target[key])) {
+		const targetValue = target[key];
+		if (isObject(targetValue)) {
 			// If target.property is a object then check its child properties
-			const same = deepTypeCompare(target[key], types[key] as Types, `${location}.${key}`);
+			const same = deepTypeCompare(targetValue, types[key] as Types, `${location}.${key}`);
 			if (same !== true) return same;
 		} else {
-			if (Array.isArray(target[key]) && Array.isArray(types[key])) {
+			if (Array.isArray(targetValue) && Array.isArray(types[key])) {
 				// target.property and types.property are arrays
 				// Check each item in target.property against types.property[0]
 				const childCheckType = types[key];
-				for (const targetItem of target[key]) {
+				for (const targetItem of targetValue) {
 					const targetType = type(targetItem);
 					// If the array entry is a object then check it
 					if (targetType === "object") return deepTypeCompare(targetItem, <Types>childCheckType, `${location}.${key}`);
@@ -74,11 +75,11 @@ export const deepTypeCompare = (target: Record<string, any>, types: Types, locat
 
 /**
  * Helper function for `deepTypeCompare` to compare a item to a type or set of types.
- * @param {string|Array<string>} expectedTypes Expected type/types
- * @param {unknown} receivedValue Object given
- * @param {string} location Location of `got` given
+ * @param expectedTypes Expected type/types
+ * @param receivedValue Object given
+ * @param location Location of `got` given
  */
-export const compareTwo = (expectedTypes: string | Array<string>, receivedValue: unknown, location: string): TypeCompareResult => {
+export const compareTwo = (expectedTypes: string | string[], receivedValue: unknown, location: string): TypeCompareResult => {
 	if (!Array.isArray(expectedTypes)) expectedTypes = [expectedTypes];
 	const gotType = type(receivedValue);
 	for (const expectedType of expectedTypes) {
@@ -89,8 +90,8 @@ export const compareTwo = (expectedTypes: string | Array<string>, receivedValue:
 
 /**
  * Returns the type of `item` respecting `Array`, `null` and `undefined` unlike typeof.
- * @param {unknown} item
- * @returns {string} Type of item
+ * @param item
+ * @returns Type of item
  */
 export const type = (item: unknown): string => {
 	if (Array.isArray(item)) return "array";
@@ -101,22 +102,22 @@ export const type = (item: unknown): string => {
 
 /**
  * Breaks `array` into smaller chunks based on `chunkSize`
- * @param {Array} array Array to break up.
- * @param {number} chunkSize Maximum size of array chunks.
+ * @param array Array to break up.
+ * @param chunkSize Maximum size of array chunks.
  *
- * @returns {Array<Array>} Array containing array chunks.
+ * @returns Array containing array chunks.
  */
-export const chunkArray = <T extends unknown[] | string>(array: T, chunkSize: number): Array<T> => {
+export const chunkArray = <T extends unknown[] | string>(array: T, chunkSize: number): T[] => {
 	if (array.length < chunkSize) return [array];
 	let i, j;
-	const returnArray: Array<T> = [];
+	const returnArray: T[] = [];
 	for (i = 0, j = array.length; i < j; i += chunkSize) returnArray.push(array.slice(i, i + chunkSize) as T);
 	return returnArray;
 };
 
 /**
  * stringifies and then parses a object to convert it to a JSON supported object.
- * @param {Object} obj Object to convert.
+ * @param obj Object to convert.
  * @example
  * const obj = {
  * 	a: 1,
@@ -126,27 +127,25 @@ export const chunkArray = <T extends unknown[] | string>(array: T, chunkSize: nu
  * const b = JSON.parse(JSON.stringify(obj))
  * console.log(a == b) -> true
  */
-export const objectify = (obj: Record<string, unknown>): Record<string, unknown> => JSON.parse(JSON.stringify(obj));
+export const objectify = (obj: UnknownRecord): UnknownRecord => JSON.parse(JSON.stringify(obj));
 
 type InspectOptions = [showHidden?: boolean, depth?: number, color?: boolean];
 
 /**
  * Logs a inspected object to console
- * @param {*} obj Object to inspect
- * @param {boolean} options Show hidden properties of object
- * @param {number} options Depth to inspect object
- * @param {boolean} options Color resulting output
- * @returns {void}
+ * @param obj Object to inspect
+ * @param options.showHidden Show hidden properties of object
+ * @param options.depth Depth to inspect object
+ * @param options.color Color resulting output
  */
 export const lObj = (obj: unknown, ...options: InspectOptions): void => console.log(iObj(obj, ...options));
 
 /**
  * Inspects a object
- * @param {*} obj Object to inspect
- * @param {boolean} showHidden Show hidden properties of object
- * @param {number} depth Depth to inspect object
- * @param {boolean} color Color resulting output
- * @returns {string}
+ * @param obj Object to inspect
+ * @param options.showHidden Show hidden properties of object
+ * @param options.depth Depth to inspect object
+ * @param options.color Color resulting output
  */
 export const iObj = (obj: unknown, ...options: InspectOptions): string => {
 	if (options[0] === undefined || options[0] === null) options[0] = false;
@@ -157,27 +156,26 @@ export const iObj = (obj: unknown, ...options: InspectOptions): string => {
 
 /**
  * Single line inspect object.
- * @param {*} obj Object to inspect
- * @param {boolean} showHidden Show hidden properties of object
- * @param {number} depth Depth to inspect object
- * @param {boolean} color Color resulting output
- * @returns {string} Inspected object in a single line, spaces aligned
+ * @param obj Object to inspect
+ * @param options.showHidden Show hidden properties of object
+ * @param options.depth Depth to inspect object
+ * @param options.color Color resulting output
  */
 export const sliObj = (obj: unknown, ...options: InspectOptions): string =>
 	iObj(obj, ...options)
 		.replace(/\r?\n/g, " ")
 		.replace(/  +/g, " ");
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type UnknownFunction = (...args: any[]) => Promise<unknown>;
+type AsyncFunction = (...args: unknown[]) => Promise<unknown>;
 type ErrorHandler = (err: Error) => Promise<void>;
+
 /**
  * Recursively runs `func` and handles errors with `errorHandler` until `func` successfully finishes.
  * @param func Function to execute
  * @param errorHandler Function to execute when a error occours
  * @returns Return value of `func` on success
  */
-export const loopError = <F extends UnknownFunction>(func: F, errorHandler: ErrorHandler = (err: Error) => new Promise((_res, r) => r(err))): ReturnType<F> =>
+export const loopError = <F extends AsyncFunction>(func: F, errorHandler: ErrorHandler = (err: Error) => new Promise((_res, r) => r(err))): ReturnType<F> =>
 	new Promise((resolve) => {
 		func()
 			.then(resolve)
@@ -187,13 +185,13 @@ export const loopError = <F extends UnknownFunction>(func: F, errorHandler: Erro
 	}) as ReturnType<F>;
 
 /**
- * @param {Array<number>} array
- * @returns {string} string containing ranges of numbers.
+ * @param array
+ * @returns string containing ranges of numbers.
  * @example
  * const range = toRange([1, 2, 3, 12, 6,7, 5, 27, 28, 29, 40, 41, 25, 42, 12])
  * // range = "1-3 & 5-7 & 12 & 25 & 27-29 & 40-42"
  */
-export const toRange = (array: Array<number>): string => {
+export const toRange = (array: number[]): string => {
 	array = array
 		.filter((a, pos) => array.indexOf(a) === pos)
 		.sort((a, b) => a - b)
@@ -224,9 +222,9 @@ export const toRange = (array: Array<number>): string => {
  * const wantedProperty = "a.child"
  * console.log(deepGet(object, wantedProperty)) // -> "Hello World"
  */
-export const deepGet = <T = unknown>(obj: Record<string, unknown>, property: string, delimiter = "."): T | undefined => {
+export const deepGet = <T = unknown>(obj: UnknownRecord, property: string, delimiter = "."): T | undefined => {
 	const arr = property.split(delimiter);
-	while (arr.length && (obj = obj[arr.shift() as string] as Record<string, unknown>));
+	while (arr.length && (obj = obj[arr.shift() as string] as UnknownRecord));
 	return obj as T;
 };
 
@@ -234,8 +232,8 @@ type ContentTemplate = { [key: string]: string | ContentTemplate };
 
 /**
  * Replaces values in a given `templatestring` with contentKeys from a given `contentKeys` object.
- * @param {object} contentKeys Object containing key value pairs of contentKeys to fill template string with
- * @param {string} templatestring string containing templates to fill
+ * @param contentKeys Object containing key value pairs of contentKeys to fill template string with
+ * @param templatestring string containing templates to fill
  * @example
  * const contentKeys = {
  * 	"title": "This is a title",
@@ -260,17 +258,15 @@ export const fillTemplate = (contentKeys: ContentTemplate, templatestring: strin
  * @example process.env["some_subproperty"] = "hello"
  * returns { some: { subProperty: "hello" } }
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getEnv = (): Record<string, any> => {
+export const getEnv = (): UnknownRecord => {
 	// Define our return object env variables are applied to.
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const envObject = {} as Record<string, any>;
+	const envObject = {} as UnknownRecord;
 	// Iterate over env keys
 	for (const envKey in process.env) {
 		// Set our reference object to be equal to the envObject to begin with.
 		let objRef = envObject;
 		// Reference to parent object to allow reassigning values that should be objects.
-		let pObjRef: [Record<string, unknown>, string] | undefined = undefined;
+		let pObjRef: [UnknownRecord, string] | undefined = undefined;
 		// Break apart the envKey into its keys. Ex some_subProperty = ["some", "subProperty"]
 		// This regex handles cases where _ is in the key, it only matches the first _ per key allowing for keys with one or more _ in them
 		const keys = envKey.split(/(?<=[^__])_/g);
@@ -283,7 +279,7 @@ export const getEnv = (): Record<string, any> => {
 				pObjRef = [objRef, keys[i]];
 			} else {
 				pObjRef = [objRef, keys[i]];
-				objRef = objRef[keys[i]] ??= {};
+				objRef = <UnknownRecord>(objRef[keys[i]] ??= {});
 			}
 		}
 		// Set the last key to equal the original value
@@ -303,16 +299,15 @@ type RecursiveUpdateOptions = { setUndefined?: boolean; setDefined?: boolean };
  * @param options.setUndefined Defaults to `true` Set properties that are undefined on `targetObject`.
  * @param options.setDefined Defaults to `false`. Overwrite properties that are not undefined on `targetObject`.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const recursiveUpdate = (
-	targetObject: Record<string, any>,
-	newObject: Record<string, any>,
+	targetObject: UnknownRecord,
+	newObject: UnknownRecord,
 	options: RecursiveUpdateOptions = { setUndefined: true, setDefined: false }
 ): void => {
 	if (!isObject(targetObject)) throw new Error("targetObject is not an object!");
 	if (!isObject(newObject)) throw new Error("newObject is not an object!");
 	for (const key in newObject) {
-		if (isObject(targetObject[key]) && isObject(newObject[key])) recursiveUpdate(targetObject[key], newObject[key], options);
+		if (isObject(targetObject[key]) && isObject(newObject[key])) recursiveUpdate(<UnknownRecord>targetObject[key], <UnknownRecord>newObject[key], options);
 		else if (options.setUndefined && targetObject[key] === undefined) targetObject[key] = newObject[key];
 		else if (options.setDefined && targetObject[key] !== undefined) targetObject[key] = newObject[key];
 	}
@@ -321,23 +316,22 @@ export const recursiveUpdate = (
 /**
  * Set the types of a given `object` based on the types of an identical `types` object. Usful in conjunction with `getEnv` to convert a object only containing strings/objects to actual types.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const rebuildTypes = <O extends Record<string, any>, T extends O>(object: O, types: T): void => {
+export const rebuildTypes = (object: UnknownRecord, types: UnknownRecord): void => {
 	for (const key in object) {
 		if (types[key] === undefined) continue;
 		switch (typeof types[key]) {
-			case "number":
-				(object[key] as number) = +object[key];
-				break;
-			case "string":
-				object[key] = object[key].toString();
-				break;
-			case "boolean":
-				(object[key] as boolean) = object[key] === true || object[key] === "true";
-				break;
-			default:
-				rebuildTypes(object[key], types[key]);
-				break;
+		case "number":
+			(<number>object[key]) = +<any>object[key];
+			break;
+		case "string":
+			(<string>object[key]) = String(object[key]);
+			break;
+		case "boolean":
+			(<boolean>object[key]) = object[key] === true || object[key] === "true";
+			break;
+		default:
+			rebuildTypes(<UnknownRecord>object[key], <UnknownRecord>types[key]);
+			break;
 		}
 	}
 };

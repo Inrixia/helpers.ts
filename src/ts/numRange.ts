@@ -4,12 +4,12 @@ type ConcatLargestUntilDone<N extends number, R extends never[][], B extends nev
 	: [...R[0], ...B][N] extends never
 	? ConcatLargestUntilDone<N, R extends [R[0], ...infer U] ? (U extends never[][] ? U : never) : never, B>
 	: ConcatLargestUntilDone<N, R extends [R[0], ...infer U] ? (U extends never[][] ? U : never) : never, [...R[0], ...B]>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	
 type Replace<R extends any[], T> = { [K in keyof R]: T };
 type TupleOf<T, N extends number> = number extends N
 	? T[]
 	: {
-			[K in N]: BuildPowersOf2LengthArrays<K, [[never]]> extends infer U ? (U extends never[][] ? Replace<ConcatLargestUntilDone<K, U, []>, T> : never) : never;
-	  }[N];
+		[K in N]: BuildPowersOf2LengthArrays<K, [[never]]> extends infer U ? (U extends never[][] ? Replace<ConcatLargestUntilDone<K, U, []>, T> : never) : never;
+	}[N];
 export type RangeOf<N extends number> = Partial<TupleOf<unknown, N>>["length"];
 export type NumRangeInclusive<FROM extends number, TO extends number> = Exclude<RangeOf<TO>, RangeOf<FROM>> | FROM;

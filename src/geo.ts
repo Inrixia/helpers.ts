@@ -1,8 +1,8 @@
 /**
  * Converts latitude or longitude to degrees, minutes & seconds.
- * @param {number} coord Latitude or longitude coordinate
+ * @param coord Latitude or longitude coordinate
  * 
- * @returns {{ degrees: number, minutes: number, seconds: number }} Coordinate in degrees, minutes & seconds
+ * @returns Coordinate in degrees, minutes & seconds
  */
 export const toDMS = (coord: number): { degrees: number, minutes: number, seconds: number } => {
 	const absolute = Math.abs(coord);
@@ -18,9 +18,8 @@ export const toRad = (val: number): number => val * Math.PI / 180;
 
 /**
  * Returns the distance between two LatLong's in kilometers
- * @param {[number, number]} pos1 [lat, long] coordinates
- * @param {[number, number]} pos2 [lat, long] coordinates
- * @returns {number}
+ * @param pos1 [lat, long] coordinates
+ * @param pos2 [lat, long] coordinates
  */
 export const getDistance = (pos1: [number, number], pos2: [number, number]): number => {
 	const [lat1, lon1] = pos1;

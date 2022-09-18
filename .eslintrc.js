@@ -1,18 +1,20 @@
-module.exports = {
+export default {
 	env: {
 		es2021: true,
 		node: true,
 	},
 	extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+	overrides: [],
 	parser: "@typescript-eslint/parser",
 	parserOptions: {
-		ecmaVersion: 12,
+		ecmaVersion: "latest",
 		sourceType: "module",
 	},
 	plugins: ["@typescript-eslint"],
 	rules: {
-		indent: [2, 1, { SwitchCase: 1 }, "tab"],
+		indent: ["error", "tab"],
 		quotes: ["error", "double"],
 		semi: ["error", "always"],
+		"@typescript-eslint/no-explicit-any": "off"
 	},
 };

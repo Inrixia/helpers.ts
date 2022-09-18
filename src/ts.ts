@@ -25,8 +25,8 @@ export type UnPad<N extends string> = N extends "0" ? "0" : N extends `0${infer 
  */
 export const generateIsKeyof =
 	<T extends Record<string | number | symbol, unknown>>(record: T) =>
-	(key: any): key is keyof T =>
-		key in record;
+		(key: any): key is keyof T =>
+			key in record;
 
 export const isDefined = <T>(O: T | undefined): O is T => O !== undefined;
 
@@ -35,17 +35,19 @@ export type OptionalKeys<T> = Exclude<keyof T, RequiredKeys<T>>;
 export type RequiredOnly<T> = Pick<T, RequiredKeys<T> & keyof T>;
 export type OptionalOnly<T> = Pick<T, OptionalKeys<T> & keyof T>;
 
+export type UnknownRecord = Record<string | number | symbol, unknown>;
+
 export type Constructor = abstract new (...args: any) => any;
 export type Primitives = StringConstructor | NumberConstructor | BooleanConstructor;
-export type Primitive<T> = T extends String
+export type Primitive<T> = T extends string
 	? string
 	: T extends StringConstructor
 	? string
-	: T extends Number
+	: T extends number
 	? number
 	: T extends NumberConstructor
 	? number
-	: T extends Boolean
+	: T extends boolean
 	? boolean
 	: T extends BooleanConstructor
 	? boolean

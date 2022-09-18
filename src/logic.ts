@@ -32,17 +32,17 @@ export const retry = <T>(
 	options?: { onErr?: (error: unknown, retryCount: number) => void; timeoutMultiplier?: number; maxRetries?: number }
 ): (() => Promise<T>) => {
 	let retryCount = 0;
-	options ??= {};
-	options.timeoutMultiplier ??= 1000;
-	options.maxRetries ??= 10;
+	const maxRetries = options?.maxRetries ?? 10;
+	const timeoutMultiplier = options?.timeoutMultiplier ?? 1000;
+	const onErr = options?.onErr;
 	const tryAgain = async (): Promise<T> => {
 		try {
 			return await func();
 		} catch (e) {
-			if (options!.onErr !== undefined) options!.onErr(e, retryCount);
-			if (retryCount < options!.maxRetries!) {
+			if (onErr !== undefined) onErr(e, retryCount);
+			if (retryCount < maxRetries) {
 				retryCount++;
-				if (options!.timeoutMultiplier! > 0) await sleep(Math.random() * options!.timeoutMultiplier!);
+				if (timeoutMultiplier > 0) await sleep(Math.random() * timeoutMultiplier);
 				return tryAgain();
 			}
 			throw e;

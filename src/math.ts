@@ -40,7 +40,7 @@ export const qRnd = (num: number, digits = 0): number => {
  * @param num Number to pad.
  * @param zeros Number of digits returned number should have.
  *
- * @returns {string} Padded number
+ * @returns Padded number
  * @example
  * let paddedNumber = nPad(5)
  * // paddedNumber = "05"

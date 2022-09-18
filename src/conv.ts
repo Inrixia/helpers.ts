@@ -3,9 +3,9 @@ const b = 243.04;
 
 /**
  * Get `dryBulbTemp` from `dewBulbTemp` and `relativeHumidity`
- * @param {number} dewPointTemp Dew point temperature in degrees celsius
- * @param {number} relativeHumidity Relative humidity in whole number percent 0-100
- * @returns {number} `dryBulbTemp` - Dry bulb temperature in degrees celsius  
+ * @param dewPointTemp Dew point temperature in degrees celsius
+ * @param relativeHumidity Relative humidity in whole number percent 0-100
+ * @returns `dryBulbTemp` - Dry bulb temperature in degrees celsius  
  * 
  * @url https://bmcnoldy.rsmas.miami.edu/humidity_conversions.pdf
  */
@@ -17,9 +17,9 @@ export const dryBulbTemp = (dewPointTemp: number, relativeHumidity: number): num
 
 /**
  * Get `dewPointTemp` from `dryBulbTemp` and `relativeHumidity`
- * @param {number} dryBulbTemp Dry bulb temperature in degrees celsius
- * @param {number} relativeHumidity Relative humidity in whole number percent 0-100
- * @returns {number} `dewPointTemp` - Dew point temperature in degrees celsius  
+ * @param dryBulbTemp Dry bulb temperature in degrees celsius
+ * @param relativeHumidity Relative humidity in whole number percent 0-100
+ * @returns `dewPointTemp` - Dew point temperature in degrees celsius  
  * 
  * @url https://bmcnoldy.rsmas.miami.edu/humidity_conversions.pdf
  */
@@ -31,9 +31,9 @@ export const dewPointTemp = (dryBulbTemp: number, relativeHumidity: number): num
 
 /**
  * Get `relativeHumidity` from `dryBulbTemp` and `dewPointTemp`
- * @param {number} dryBulbTemp Dry bulb temperature in degrees celsius
- * @param {number} dewPointTemp Dew point temperature in degrees celsius  
- * @returns {number} `dryBulbTemp` - Relative humidity in whole number percent 0-100
+ * @param dryBulbTemp Dry bulb temperature in degrees celsius
+ * @param dewPointTemp Dew point temperature in degrees celsius  
+ * @returns `dryBulbTemp` - Relative humidity in whole number percent 0-100
  * 
  * @url https://bmcnoldy.rsmas.miami.edu/humidity_conversions.pdf
  */

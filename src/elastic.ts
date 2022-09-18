@@ -1,15 +1,17 @@
 import type { Client, SearchParams, SearchResponse, IndicesCreateParams } from "elasticsearch";
+import type { UnknownRecord } from "./ts.js";
 
 import { EventEmitter } from "events";
 
+
 /**
  * Indexes a large amount of entities in a single query
- * @param {Object[]} entities Array containing entities to index
- * @param {string} indexName Name of index to index entities.
+ * @param entities Array containing entities to index
+ * @param indexName Name of index to index entities.
  *
- * @returns {Promise<number>} Promise that resolves time taken to index entities in ms.
+ * @returns Promise that resolves time taken to index entities in ms.
  */
-export const bulkIndex = async (elastic: Client, entities: Array<Record<string, unknown>>, indexName: string, refresh = false): Promise<number> =>
+export const bulkIndex = async (elastic: Client, entities: UnknownRecord[], indexName: string, refresh = false): Promise<number> =>
 	elastic.bulk({
 		refresh: refresh,
 		body: entities.flatMap((entity) => [{ index: { _index: indexName } }, entity]),
@@ -17,7 +19,7 @@ export const bulkIndex = async (elastic: Client, entities: Array<Record<string, 
 
 /**
  * Queries elastic using `params`.
- * @param {*} params Query object.
+ * @param params Query object.
  *
  * @returns Iterator that yeilds a result until query exhausted.
  */
@@ -40,9 +42,9 @@ export async function* scrollSearch(elastic: Client, params: SearchParams): Asyn
 
 /**
  * Function to recreate a elasticsearch index.
- * @param {ElasticClient} elastic Elasticsearch client
- * @param {{index: string, body: { mappings?: {}, settings?: {} }}} createParams Elastic parameters for creation of index
- * @param {{logProgress?: boolean, destoryIfExists: boolean}} [options] Options for creation
+ * @param elastic Elasticsearch client
+ * @param createParams Elastic parameters for creation of index
+ * @param options Options for creation
  */
 export const createIndex = async (
 	elastic: Client,
@@ -88,11 +90,11 @@ export const createIndex = async (
 
 /**
  * Returns scrollsearch results in simulated time based on when result timestamp.
- * @param {ElasticClient} elastic Elasticsearch client to use
- * @param {{ index: string, scroll: string, body: object }} query Query object to use for scroll search
- * @param {string} timestampKey Key to use for fetching timestamp from objects
- * @param {number} options.timescale Rate at which "time" progreesses
- * @returns {EventEmitter} EventEmitter which emits 'entity' events containing resulting hits
+ * @param elastic Elasticsearch client to use
+ * @param query Query object to use for scroll search
+ * @param timestampKey Key to use for fetching timestamp from objects
+ * @param options.timescale Rate at which "time" progreesses
+ * @returns EventEmitter which emits 'entity' events containing resulting hits
  * @example
  * 	const elasticClient = new ElasticClient({ node: 'http://127.0.0.1:9200' })
  * 	const timestamp = "reportedTime"
@@ -119,20 +121,20 @@ export const stream = (
 		if (typeof options.timescale !== "number") throw new Error("options.timescale must be a number!");
 		if (timestampKey === undefined) throw new Error("timestampKey is undefined!");
 		let timeOffset: number | undefined;
-		let startDate: number;
+		let startDate = Date.now();
 
 		if (options.logProgress) console.log("Beginning elastic scroll for entity streaming...");
 		for await (const result of scrollSearch(elastic, query) as AsyncGenerator<SearchResponse<{ [timestampKey: string]: number }>>) {
 			if (options.logProgress) console.log(`Query iteration finished, streaming ${result.hits.hits.length} entities.`);
 			if (timeOffset === undefined) {
-				timeOffset = new Date().getTime() - new Date(result.hits.hits[0]._source[timestampKey]).getTime();
+				timeOffset = Date.now() - new Date(result.hits.hits[0]._source[timestampKey]).getTime();
 				startDate = Date.now();
 			}
 			for (const entity of result.hits.hits) {
 				const offsetEntityTime = new Date(entity._source[timestampKey]).getTime() + timeOffset;
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion, no-empty
-				while (Date.now() + (Date.now() - startDate!) * options.timescale < offsetEntityTime) {}
-				// process.stdout.write(`Current Time: ${new Date(Date.now()+((Date.now()-startDate)*options.timescale)).toISOString()} <- ${options.timescale}x ${new Date().toISOString()}\nEntity  Time: ${new Date(offsetEntityTime).toISOString()} <-    ${new Date(entity._source[timestampKey]).toISOString()}\n\n`)
+				while (Date.now() + (Date.now() - startDate) * options.timescale < offsetEntityTime) {
+					// Spin while waiting to emit next entity
+				}
 				entityReceiver.emit("entity", entity._source);
 			}
 		}

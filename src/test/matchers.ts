@@ -1,14 +1,14 @@
 import { expect } from "vitest";
 
-import type { ValueOfA, Primitives, Primitive } from "../ts.js";
+import type { ValueOfA, Primitives, Primitive, UnknownRecord } from "../ts.js";
 
 export type Matchers = {
 	typeOrNull: <T extends Primitives>(matcher: T) => Primitive<T> | null;
 	typeOrUndefined: <T extends Primitives>(matcher: T) => Primitive<T> | undefined;
-	objectContainingOrEmpty: <T>(matcher: T) => T | {};
+	objectContainingOrEmpty: <T>(matcher: T) => T | UnknownRecord;
 	objectContainingOrUndefined: <T>(matcher: T) => T | undefined;
 	objectContainingOrNull: <T>(matcher: T) => T | null;
-	objectContainingOrEmptyOrUndefined: <T>(matcher: T) => T | {} | undefined;
+	objectContainingOrEmptyOrNullish: <T>(matcher: T) => T | UnknownRecord | undefined | null;
 	keylessObjectContaining: <T>(matcher: T) => Record<string, T>;
 	arrayContainingOrEmpty: <T>(matcher: [T]) => T[] | [];
 	arrayContainingOrEmptyOrUndefined: <T>(matcher: [T]) => T[] | [] | undefined;
@@ -19,53 +19,53 @@ const OK = {
 	pass: true,
 };
 export const matchers: Record<keyof Matchers, any> = {
-	typeOrNull(received: any, argument: any) {
+	typeOrNull(received: unknown, argument: unknown) {
 		if (received === null) return OK;
 		expect(received).toStrictEqual(expect.any(argument));
 		return OK;
 	},
-	typeOrUndefined(received: any, argument: any) {
+	typeOrUndefined(received: unknown, argument: unknown) {
 		if (received === undefined) return OK;
 		expect(received).toStrictEqual(expect.any(argument));
 		return OK;
 	},
-	objectContainingOrEmpty(received: any, argument: any) {
+	objectContainingOrEmpty(received: unknown[], argument: unknown) {
 		if (Object.keys(received).length === 0) return OK;
 		expect(received).toStrictEqual(expect.objectContaining(argument));
 		return OK;
 	},
-	objectContainingOrUndefined(received: any, argument: any) {
+	objectContainingOrUndefined(received: unknown, argument: unknown) {
 		if (received === undefined) return OK;
 		expect(received).toStrictEqual(expect.objectContaining(argument));
 		return OK;
 	},
-	objectContainingOrNull(received: any, argument: any) {
+	objectContainingOrNull(received: unknown, argument: unknown) {
 		if (received === null) return OK;
 		expect(received).toStrictEqual(expect.objectContaining(argument));
 		return OK;
 	},
-	objectContainingOrEmptyOrUndefined(received: any, argument: any) {
-		if (received === undefined || Object.keys(received).length === 0) return OK;
+	objectContainingOrEmptyOrNullish(received: unknown, argument: unknown) {
+		if (received === undefined || received === null || Object.keys(received).length === 0) return OK;
 		expect(received).toStrictEqual(expect.objectContaining(argument));
 		return OK;
 	},
-	keylessObjectContaining(received: Record<string, any>, argument: any) {
+	keylessObjectContaining(received: UnknownRecord, argument: unknown) {
 		for (const key in received) {
 			expect(received[key]).toStrictEqual(argument);
 		}
 		return OK;
 	},
-	arrayContainingOrEmpty<T>(received: any, argument: any[]) {
+	arrayContainingOrEmpty(received: unknown[], argument: any[]) {
 		if (received.length === 0) return OK;
 		expect(received).toStrictEqual(expect.arrayContaining(argument));
 		return OK;
 	},
-	arrayContainingOrEmptyOrUndefined(received: any, argument: any[]) {
+	arrayContainingOrEmptyOrUndefined(received: unknown[], argument: unknown[]) {
 		if (received === undefined || received.length === 0) return OK;
 		expect(received).toStrictEqual(expect.arrayContaining(argument));
 		return OK;
 	},
-	enum(received: any, argument: any[]) {
+	enum(received: unknown, argument: unknown[]) {
 		expect(argument).toContain(received);
 		return OK;
 	},

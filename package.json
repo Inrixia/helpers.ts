@@ -1,6 +1,6 @@
 {
 	"name": "@inrixia/helpers",
-	"version": "2.0.5",
+	"version": "2.0.6",
 	"description": "Helper functions for various projects",
 	"type": "module",
 	"scripts": {

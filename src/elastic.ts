@@ -3,7 +3,6 @@ import type { UnknownRecord } from "./ts.js";
 
 import { EventEmitter } from "events";
 
-
 /**
  * Indexes a large amount of entities in a single query
  * @param entities Array containing entities to index

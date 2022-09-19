@@ -25,8 +25,8 @@ export type UnPad<N extends string> = N extends "0" ? "0" : N extends `0${infer 
  */
 export const generateIsKeyof =
 	<T extends Record<string | number | symbol, unknown>>(record: T) =>
-		(key: any): key is keyof T =>
-			key in record;
+	(key: any): key is keyof T =>
+		key in record;
 
 export const isDefined = <T>(O: T | undefined): O is T => O !== undefined;
 

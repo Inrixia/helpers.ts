@@ -1,10 +1,10 @@
 /**
  * Converts latitude or longitude to degrees, minutes & seconds.
  * @param coord Latitude or longitude coordinate
- * 
+ *
  * @returns Coordinate in degrees, minutes & seconds
  */
-export const toDMS = (coord: number): { degrees: number, minutes: number, seconds: number } => {
+export const toDMS = (coord: number): { degrees: number; minutes: number; seconds: number } => {
 	const absolute = Math.abs(coord);
 	const degrees = Math.floor(absolute);
 	const minutesNotTruncated = (absolute - degrees) * 60;
@@ -14,7 +14,7 @@ export const toDMS = (coord: number): { degrees: number, minutes: number, second
 };
 
 // Converts numeric degrees to radians
-export const toRad = (val: number): number => val * Math.PI / 180;
+export const toRad = (val: number): number => (val * Math.PI) / 180;
 
 /**
  * Returns the distance between two LatLong's in kilometers

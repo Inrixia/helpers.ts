@@ -253,7 +253,7 @@ export const fillTemplate = (contentKeys: ContentTemplate, templatestring: strin
 	return templatestring;
 };
 
-type EnvDict = { [key: string]: string | EnvDict};
+type EnvDict = { [key: string]: string | EnvDict };
 
 /**
  * Converts process.env variables into a object
@@ -289,7 +289,6 @@ export const getEnv = (): EnvDict => {
 		if (!isObject(objRef) && pObjRef !== undefined) objRef = pObjRef[0][pObjRef[1]] = { _: objRef };
 		const envValue = process.env[envKey];
 		if (envValue !== undefined) objRef[keys[keys.length - 1]] = envValue;
-		
 	}
 	return <EnvDict>envObject;
 };
@@ -324,18 +323,18 @@ export const rebuildTypes = (object: UnknownRecord, types: UnknownRecord): void 
 	for (const key in object) {
 		if (types[key] === undefined) continue;
 		switch (typeof types[key]) {
-		case "number":
-			(<number>object[key]) = +<any>object[key];
-			break;
-		case "string":
-			(<string>object[key]) = String(object[key]);
-			break;
-		case "boolean":
-			(<boolean>object[key]) = object[key] === true || object[key] === "true";
-			break;
-		default:
-			rebuildTypes(<UnknownRecord>object[key], <UnknownRecord>types[key]);
-			break;
+			case "number":
+				(<number>object[key]) = +(<any>object[key]);
+				break;
+			case "string":
+				(<string>object[key]) = String(object[key]);
+				break;
+			case "boolean":
+				(<boolean>object[key]) = object[key] === true || object[key] === "true";
+				break;
+			default:
+				rebuildTypes(<UnknownRecord>object[key], <UnknownRecord>types[key]);
+				break;
 		}
 	}
 };

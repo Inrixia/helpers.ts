@@ -28,7 +28,6 @@ export async function* scrollSearch(elastic: Client, params: SearchParams): Asyn
 	let nextResponse;
 	while (true) {
 		nextResponse = elastic.scroll({
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			scrollId: response._scroll_id!,
 			scroll: params.scroll,
 		});

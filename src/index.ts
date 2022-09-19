@@ -1,5 +1,4 @@
 export * from "./conv.js";
-export * from "./elastic.js";
 export * from "./geo.js";
 export * from "./logic.js";
 export * from "./math.js";

@@ -15,10 +15,6 @@
 			"types": "./dist/conv.d.ts",
 			"import": "./dist/conv.js"
 		},
-		"./elastic": {
-			"types": "./dist/elastic.d.ts",
-			"import": "./dist/elastic.js"
-		},
 		"./geo": {
 			"types": "./dist/geo.d.ts",
 			"import": "./dist/geo.js"
@@ -59,7 +55,6 @@
 	},
 	"homepage": "https://github.com/Inrixia/Helpers#readme",
 	"devDependencies": {
-		"@elastic/elasticsearch": "^8.4.0",
 		"@types/node": "^18.7.18",
 		"@typescript-eslint/eslint-plugin": "^5.37.0",
 		"eslint": "^8.23.1",

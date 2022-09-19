@@ -4,8 +4,7 @@
 	"description": "Helper functions for various projects",
 	"type": "module",
 	"scripts": {
-		"postinstall": "tsc",
-		"prepublish": "tsc"
+		"prepare": "tsc"
 	},
 	"exports": {
 		".": {

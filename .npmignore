@@ -1,3 +1,4 @@
 .eslintrc.*
 .prettierrc
+tsconfig.json
 src/

@@ -2,8 +2,6 @@
 	"name": "@inrixia/helpers",
 	"version": "2.0.3",
 	"description": "Helper functions for various projects",
-	"main": "index.js",
-	"types": "index.d.ts",
 	"type": "module",
 	"scripts": {
 		"postinstall": "tsc"
@@ -61,7 +59,7 @@
 	},
 	"homepage": "https://github.com/Inrixia/Helpers#readme",
 	"devDependencies": {
-		"@types/elasticsearch": "^5.0.40",
+		"@elastic/elasticsearch": "^8.4.0",
 		"@types/node": "^18.7.18",
 		"@typescript-eslint/eslint-plugin": "^5.37.0",
 		"eslint": "^8.23.1",

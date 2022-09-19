@@ -1,4 +1,6 @@
-import type { Client, SearchParams, SearchResponse, IndicesCreateParams } from "elasticsearch";
+import type { Client } from "@elastic/elasticsearch";
+import type { IndicesCreateRequest, SearchRequest, SearchResponse } from "@elastic/elasticsearch/lib/api/types.js";
+
 import type { UnknownRecord } from "./ts.js";
 
 import { EventEmitter } from "events";
@@ -10,9 +12,9 @@ import { EventEmitter } from "events";
  *
  * @returns Promise that resolves time taken to index entities in ms.
  */
-export const bulkIndex = async (elastic: Client, entities: UnknownRecord[], indexName: string, refresh = false): Promise<number> =>
+export const bulkIndex = async (elastic: Client, entities: UnknownRecord[], indexName: string, refresh = false) =>
 	elastic.bulk({
-		refresh: refresh,
+		refresh,
 		body: entities.flatMap((entity) => [{ index: { _index: indexName } }, entity]),
 	});
 
@@ -22,18 +24,18 @@ export const bulkIndex = async (elastic: Client, entities: UnknownRecord[], inde
  *
  * @returns Iterator that yeilds a result until query exhausted.
  */
-export async function* scrollSearch(elastic: Client, params: SearchParams): AsyncGenerator<SearchResponse<unknown>> {
+export async function* scrollSearch<T = unknown>(elastic: Client, params: SearchRequest): AsyncGenerator<SearchResponse<T>> {
 	if (params.scroll === undefined) throw new Error("params.scroll is required!");
 	let response = await elastic.search(params);
 	let nextResponse;
 	while (true) {
 		nextResponse = elastic.scroll({
-			scrollId: response._scroll_id!,
+			scroll_id: response._scroll_id,
 			scroll: params.scroll,
 		});
 		if (!response._scroll_id) break;
 		if (response.hits.hits.length === 0) break;
-		yield response;
+		yield <SearchResponse<T>>response;
 		response = await nextResponse;
 	}
 }
@@ -46,7 +48,7 @@ export async function* scrollSearch(elastic: Client, params: SearchParams): Asyn
  */
 export const createIndex = async (
 	elastic: Client,
-	createParams: IndicesCreateParams,
+	createParams: IndicesCreateRequest,
 	options: { logProgress?: boolean; destoryIfExists: boolean }
 ): Promise<void> => {
 	if (!options) throw new Error("Options required!");
@@ -107,10 +109,10 @@ export const createIndex = async (
  * 	}
  * 	stream(elasticClient, query, timestamp, 2).on('entity', console.log) // <- Emitted results based on time moving at 2x normal speed
  */
-export const stream = (
+export const stream = <T extends UnknownRecord>(
 	elastic: Client,
-	query: SearchParams,
-	timestampKey: string,
+	query: SearchRequest,
+	timestampKey: keyof T,
 	options: { timescale: number; logProgress: boolean } = { timescale: 1, logProgress: false }
 ): EventEmitter => {
 	const entityReceiver = new EventEmitter();
@@ -122,14 +124,18 @@ export const stream = (
 		let startDate = Date.now();
 
 		if (options.logProgress) console.log("Beginning elastic scroll for entity streaming...");
-		for await (const result of scrollSearch(elastic, query) as AsyncGenerator<SearchResponse<{ [timestampKey: string]: number }>>) {
+		for await (const result of scrollSearch(elastic, query)) {
 			if (options.logProgress) console.log(`Query iteration finished, streaming ${result.hits.hits.length} entities.`);
 			if (timeOffset === undefined) {
-				timeOffset = Date.now() - new Date(result.hits.hits[0]._source[timestampKey]).getTime();
+				const timestamp = (<SearchResponse<T>>result).hits.hits[0]._source?.[timestampKey];
+				if (typeof timestamp !== "number") throw new Error("timestamp is not a number!");
+				timeOffset = Date.now() - new Date(timestamp).getTime();
 				startDate = Date.now();
 			}
-			for (const entity of result.hits.hits) {
-				const offsetEntityTime = new Date(entity._source[timestampKey]).getTime() + timeOffset;
+			for (const entity of (<SearchResponse<T>>result).hits.hits) {
+				const timestamp = entity._source?.[timestampKey];
+				if (typeof timestamp !== "number") throw new Error("timestamp is not a number!");
+				const offsetEntityTime = new Date().getTime() + timeOffset;
 				while (Date.now() + (Date.now() - startDate) * options.timescale < offsetEntityTime) {
 					// Spin while waiting to emit next entity
 				}

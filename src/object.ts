@@ -228,8 +228,6 @@ export const deepGet = <T = unknown>(obj: UnknownRecord, property: string, delim
 	return obj as T;
 };
 
-type ContentTemplate = { [key: string]: string | ContentTemplate };
-
 /**
  * Replaces values in a given `templatestring` with contentKeys from a given `contentKeys` object.
  * @param contentKeys Object containing key value pairs of contentKeys to fill template string with
@@ -245,10 +243,11 @@ type ContentTemplate = { [key: string]: string | ContentTemplate };
  *
  * fillTemplate(contentKeys, template) // => Wow! This is a title... Here is some info: This is some info!"
  */
-export const fillTemplate = (contentKeys: ContentTemplate, templatestring: string, parent = ""): string => {
+export const fillTemplate = (contentKeys: UnknownRecord, templatestring: string, parent = ""): string => {
 	for (const key in contentKeys) {
-		if (isObject(contentKeys[key])) templatestring = fillTemplate(contentKeys[key] as ContentTemplate, templatestring, `${parent}${key}.`);
-		else templatestring = templatestring.replace(new RegExp(`{${parent}${key}}`, "g"), contentKeys[key] as string);
+		const value = contentKeys[key];
+		if (isObject(value)) templatestring = fillTemplate(value, templatestring, `${parent}${key}.`);
+		else templatestring = templatestring.replaceAll(new RegExp(`{${parent}${key}}`, "g"), String(value));
 	}
 	return templatestring;
 };

@@ -1,15 +1,14 @@
-export const memoize = <G extends Function>(generator: G): G => {
+export const memoize = <G extends (...args: any[]) => any, O extends G & { clear: (...args: Parameters<G>) => void }>(generator: G): O => {
 	if (generator.length === 0) {
 		let cache: unknown;
-		return (() => {
-			if (cache) return cache;
-			return (cache = generator());
-		}) as unknown as G;
+		const _fn = (() => (cache ??= generator())) as unknown as O;
+		_fn.clear = () => (cache = undefined);
+		return _fn;
 	}
 	const cache: Record<string, unknown> = {};
-	return ((...args: unknown[]) => {
-		const key = JSON.stringify(args);
-		if (key in cache) return cache[key];
-		return (cache[key] ??= generator(...args));
-	}) as unknown as G;
+	const _fn = ((...args: unknown[]) => (cache[JSON.stringify(args)] ??= generator(...args))) as unknown as O;
+	_fn.clear = (...args: unknown[]) => {
+		delete cache[JSON.stringify(args)];
+	};
+	return _fn;
 };

@@ -1,5 +1,4 @@
-import { promisify } from "util";
-export const sleep = promisify(setTimeout);
+import { sleep } from "./sleep.js";
 
 export const retry = <T>(
 	func: () => Promise<T> | T,

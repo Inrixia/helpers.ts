@@ -3,32 +3,8 @@
 	"version": "3.0.0",
 	"description": "Helper functions for various projects",
 	"type": "module",
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js"
-		},
-		"./fn": {
-			"types": "./dist/fn/index.d.ts",
-			"import": "./dist/fn/index.js"
-		},
-		"./fs": {
-			"types": "./dist/fs/index.d.ts",
-			"import": "./dist/fs/index.js"
-		},
-		"./math": {
-			"types": "./dist/math/index.d.ts",
-			"import": "./dist/math/index.js"
-		},
-		"./obj": {
-			"types": "./dist/obj/index.d.ts",
-			"import": "./dist/obj/index.js"
-		},
-		"./ts": {
-			"types": "./dist/ts/index.d.ts",
-			"import": "./dist/ts/index.js"
-		}
-	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"scripts": {
 		"prepare": "rimraf dist && tsc"
 	},
@@ -43,8 +19,8 @@
 	},
 	"homepage": "https://github.com/Inrixia/Helpers#readme",
 	"devDependencies": {
-		"@types/node": "^18.19.86",
+		"@types/node": "^22.14.0",
 		"rimraf": "^6.0.1",
-		"typescript": "^4.9.5"
+		"typescript": "^5.8.2"
 	}
 }

@@ -1,5 +1,5 @@
-export const asyncDebounce = <A extends any[], V>(generator: (...args: A) => Promise<V>) => {
-	if (generator.length === 0) {
+export const asyncDebounce = <A extends any[], V>(generator: (...args: A) => Promise<V>, ignoreArgs = false) => {
+	if (ignoreArgs || generator.length === 0) {
 		let _current: Promise<V> | undefined;
 		const _func = (): Promise<V> => {
 			if (_current) return _current;

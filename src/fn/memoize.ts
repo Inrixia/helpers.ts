@@ -1,5 +1,5 @@
-export const memoize = <G extends (...args: any[]) => any, O extends G & { clear: (...args: Parameters<G>) => void }>(generator: G): O => {
-	if (generator.length === 0) {
+export const memoize = <G extends (...args: any[]) => any, O extends G & { clear: (...args: Parameters<G>) => void }>(generator: G, ignoreArgs = false): O => {
+	if (ignoreArgs || generator.length === 0) {
 		let cache: unknown;
 		const _fn = (() => (cache ??= generator())) as unknown as O;
 		_fn.clear = () => (cache = undefined);

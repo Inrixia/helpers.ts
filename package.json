@@ -19,8 +19,8 @@
 	},
 	"homepage": "https://github.com/Inrixia/Helpers#readme",
 	"devDependencies": {
-		"@types/node": "^22.14.0",
+		"@types/node": "^22.14.1",
 		"rimraf": "^6.0.1",
-		"typescript": "^5.8.2"
+		"typescript": "^5.8.3"
 	}
 }

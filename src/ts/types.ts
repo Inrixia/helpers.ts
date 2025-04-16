@@ -38,6 +38,7 @@ export type AnyRecord = Record<AnyKey, any>;
 export type Unload = () => MaybePromise<unknown>;
 
 export type MaybePromise<T> = T | Promise<T>;
+export type VoidLike = void | undefined;
 
 export type Constructor = abstract new (...args: any) => any;
 export type Primitives = StringConstructor | NumberConstructor | BooleanConstructor;

@@ -1,4 +1,4 @@
-import type { MaybePromise } from "../ts/types.js";
+import type { VoidFn } from "../ts/types.js";
 
 export type SignalChange<T> = (next: T, previous?: T) => unknown;
 /**
@@ -29,9 +29,11 @@ export class Signal<T> {
 	/**
 	 * @param cb Called after Signal._ is set with new and old values cb(next, previous)
 	 */
-	onValue(cb: SignalChange<T>): () => MaybePromise<unknown> {
+	onValue(cb: SignalChange<T>): VoidFn {
 		cb(this.value, this.value);
 		this._observers.add(cb);
-		return () => this._observers.delete(cb);
+		return () => {
+			this._observers.delete(cb);
+		};
 	}
 }

@@ -1,6 +1,6 @@
 // based on: https://github.com/KaiHax/kaihax/blob/master/src/patcher.ts
 
-import type { FnInfo } from "../ts/types.js";
+import type { VoidFn } from "../ts/types.js";
 
 export type ObserveCallback<E extends Element = Element> = (elem: E) => unknown;
 export type ObserveEntry<E extends Element = Element> = [selector: string, callback: ObserveCallback<E>];
@@ -30,7 +30,7 @@ const observer = new MutationObserver((records) => {
  * @param cb The callback function to execute when a matching element is found cast to type T.
  * @returns An `Unload` function that, when called, will stop observing for this selector and callback pair.
  */
-export const observe = <T extends Element = Element>(selector: string, cb: ObserveCallback<T>): FnInfo => {
+export const observe = <T extends Element = Element>(selector: string, cb: ObserveCallback<T>): VoidFn => {
 	if (observables.size === 0)
 		observer.observe(document.body, {
 			subtree: true,

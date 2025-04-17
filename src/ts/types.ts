@@ -35,7 +35,11 @@ export type AnyKey = string | number | symbol;
 export type UnknownRecord = Record<AnyKey, unknown>;
 export type AnyRecord = Record<AnyKey, any>;
 
-export type Unload = () => MaybePromise<unknown>;
+export type FnInfo<T extends object | never = never> = T extends never
+	? () => MaybePromise<unknown>
+	: T & {
+			(): MaybePromise<unknown>;
+	  };
 
 export type MaybePromise<T> = T | Promise<T>;
 export type VoidLike = void | undefined;

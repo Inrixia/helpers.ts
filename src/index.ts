@@ -29,6 +29,7 @@ export * from "./obj/hash.js";
 export * from "./obj/objectify.js";
 export * from "./obj/rebuildTypes.js";
 export * from "./obj/RecursiveUpdateOptions.js";
+export * from "./obj/setDefaults.js";
 export * from "./test.js";
 export * from "./ts/isKeyOf.js";
 export * from "./ts/isTypeOf.js";

@@ -3,6 +3,9 @@ export class Promize<T> implements Promise<T> {
 	public res!: (value: T | PromiseLike<T>) => void;
 	public rej!: (reason?: any) => void;
 
+	/**
+	 * Immdiately resolves the promise with the given value if provided.
+	 */
 	constructor(resValue?: T) {
 		this.set(resValue);
 	}
@@ -12,11 +15,18 @@ export class Promize<T> implements Promise<T> {
 	 * @param resValue If not undefined, resolves the internal promise with given value on creation.
 	 */
 	set(resValue?: T): void {
+		this.reset();
+		if (resValue !== undefined) this.res(resValue);
+	}
+
+	/**
+	 * Recreate the underlying promise
+	 */
+	reset(): void {
 		this._promise = new Promise<T>((res, rej) => {
 			this.res = res;
 			this.rej = rej;
 		});
-		if (resValue !== undefined) this.res(resValue);
 	}
 
 	then: Promise<T>["then"] = (onRes, onRej) => this._promise.then(onRes, onRej);

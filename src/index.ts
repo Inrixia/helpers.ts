@@ -3,7 +3,6 @@ export * from "./fn/asyncDebounce.js";
 export * from "./fn/debounce.js";
 export * from "./fn/loopError.js";
 export * from "./fn/memoize.js";
-export * from "./fn/observable.js";
 export * from "./fn/Promize.js";
 export * from "./fn/registerEmitter.js";
 export * from "./fn/retry.js";

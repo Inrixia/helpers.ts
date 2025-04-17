@@ -15,7 +15,9 @@ export type SignalChange<T> = (next: T, previous?: T) => unknown;
  */
 export class Signal<T> {
 	private readonly _observers: Set<SignalChange<T>> = new Set();
-	constructor(private value: T) {}
+	constructor(private value: T, onValue?: SignalChange<T>) {
+		if (onValue) this.onValue(onValue);
+	}
 	public get _(): T {
 		return this.value;
 	}

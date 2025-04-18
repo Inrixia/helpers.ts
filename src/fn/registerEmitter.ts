@@ -1,6 +1,8 @@
+import type { VoidFn } from "../ts/types.js";
+
 export type Receiver<V> = (value: V) => unknown;
 export type Emit<V> = (eventValue: V, onError: (err: unknown) => unknown) => Promise<unknown>;
-export type AddReceiver<V> = (cb: Receiver<V>) => () => void;
+export type AddReceiver<V> = (cb: Receiver<V>, unloads: Set<VoidFn>) => () => void;
 export type AddEmitter<V> = (emitEvent: Emit<V>) => unknown;
 
 /**
@@ -36,11 +38,14 @@ export function registerEmitter<V>(registerEmitter?: AddEmitter<V>): [onEvent: A
 		}
 		await Promise.all(promises);
 	};
-	const addReceiver: AddReceiver<V> = (cb: Receiver<V>) => {
+	const addReceiver: AddReceiver<V> = (cb: Receiver<V>, unloads: Set<VoidFn>) => {
 		listeners.add(cb);
-		return () => {
+		const unload = () => {
 			listeners.delete(cb);
+			unloads.delete(unload);
 		};
+		unloads.add(unload);
+		return unload;
 	};
 	if (registerEmitter) {
 		registerEmitter(onEventValue);

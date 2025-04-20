@@ -23,10 +23,10 @@ export class Promize<T> implements Promise<T> {
 	 * Recreate the underlying promise
 	 */
 	reset(): void {
-		this._promise = new Promise<T>((res, rej) => {
-			this.res = res;
-			this.rej = rej;
-		});
+		const withRes = Promise.withResolvers<T>();
+		this._promise = withRes.promise;
+		this.res = withRes.resolve;
+		this.rej = withRes.reject;
 	}
 
 	then: Promise<T>["then"] = (onRes, onRej) => this._promise.then(onRes, onRej);

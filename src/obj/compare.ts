@@ -1,6 +1,6 @@
-import { isObject } from "../ts/isTypeOf.js";
-import { UnknownRecord } from "../ts/types.js";
-import { typeOf } from "../ts/typeOf.js";
+import { isObject } from "../ts/isTypeOf";
+import { typeOf } from "../ts/typeOf";
+import { UnknownRecord } from "../ts/types";
 
 export type TypeCompareResult = boolean | { expectedType: string; received: string; location: string };
 export type ObjTypes = { [key: string]: string | string[] | ObjTypes | ObjTypes[] };

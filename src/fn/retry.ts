@@ -1,4 +1,4 @@
-import { sleep } from "./sleep.js";
+import { sleep } from "./sleep";
 
 export const retry = <T>(
 	func: () => Promise<T> | T,

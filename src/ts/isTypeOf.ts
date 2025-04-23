@@ -1,4 +1,4 @@
-import { TypeOfStr, TypeMap, typeOf } from "./typeOf.js";
+import { TypeMap, typeOf, TypeOfStr } from "./typeOf";
 
 export const isUndefined = <T>(O: T | undefined): O is undefined => O === undefined;
 export const isNull = <T>(O: T | null): O is null => O === null;

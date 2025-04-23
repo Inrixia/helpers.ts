@@ -1,4 +1,4 @@
-.eslintrc.*
-.prettierrc
-tsconfig.json
-src/
+*
+!README.md
+!package.json
+!dist/**/*

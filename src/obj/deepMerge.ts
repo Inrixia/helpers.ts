@@ -1,5 +1,5 @@
-import { isObject } from "../ts/isTypeOf.js";
-import { UnknownRecord } from "../ts/types.js";
+import { isObject } from "../ts/isTypeOf";
+import { UnknownRecord } from "../ts/types";
 /**
  * Deep merge objects into target. Without modifying target.
  * @param target

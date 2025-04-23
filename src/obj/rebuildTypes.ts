@@ -1,4 +1,4 @@
-import { UnknownRecord } from "../ts/types.js";
+import { UnknownRecord } from "../ts/types";
 
 /**
  * Set the types of a given `object` based on the types of an identical `types` object. Usful in conjunction with `getEnv` to convert a object only containing strings/objects to actual types.

@@ -1,4 +1,4 @@
-import type { ValueOfA, Primitives, Primitive, UnknownRecord, Constructor } from "./ts/types.js";
+import type { Constructor, Primitive, Primitives, UnknownRecord, ValueOfA } from "./ts/types";
 
 interface Expect {
 	any<C>(constructor: C extends Constructor ? C : any): C extends Constructor ? Primitive<C> : C;

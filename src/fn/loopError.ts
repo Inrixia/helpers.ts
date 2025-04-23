@@ -1,4 +1,4 @@
-import { AsyncFunction } from "../ts/types.js";
+import { AsyncFunction } from "../ts/types";
 
 type ErrorHandler = (err: Error) => Promise<void>;
 /**

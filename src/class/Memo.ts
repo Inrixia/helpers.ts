@@ -1,7 +1,7 @@
-import type { AnyFn, VoidLike } from "../ts/types.js";
-import { ArgsMap } from "./ArgsMap.js";
-import { DequalMap } from "./DequalMap.js"; // Import DequalMap
-import { StringifyMap } from "./StringifyMap.js";
+import type { AnyFn, VoidLike } from "../ts/types";
+import { ArgsMap } from "./ArgsMap";
+import { DequalMap } from "./DequalMap"; // Import DequalMap
+import { StringifyMap } from "./StringifyMap";
 
 export type Memoized<G extends AnyFn> = G & { clear: (...args: Parameters<G>) => VoidLike };
 

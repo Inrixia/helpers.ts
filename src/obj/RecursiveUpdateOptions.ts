@@ -1,5 +1,5 @@
-import { UnknownRecord } from "../ts/types.js";
-import { isObject } from "../ts/isTypeOf.js";
+import { isObject } from "../ts/isTypeOf";
+import { UnknownRecord } from "../ts/types";
 
 type RecursiveUpdateOptions = { setUndefined?: boolean; setDefined?: boolean };
 

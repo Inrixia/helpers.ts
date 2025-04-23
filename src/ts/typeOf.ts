@@ -1,4 +1,4 @@
-import { UnknownRecord } from "./types.js";
+import { UnknownRecord } from "./types";
 
 /**
  * Returns the type of `item` respecting `Array`, `null` and `undefined` unlike typeof.

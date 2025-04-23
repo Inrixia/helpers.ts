@@ -1,4 +1,4 @@
-import { UnknownRecord } from "./types.js";
+import { UnknownRecord } from "./types";
 
 /**
  * Returns a type guard to validate a passed key is a keyof given record

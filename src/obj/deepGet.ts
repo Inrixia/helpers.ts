@@ -1,4 +1,4 @@
-import { UnknownRecord } from "../ts/types.js";
+import { UnknownRecord } from "../ts/types";
 
 /**
  * Returns the `property` requested from `obj`

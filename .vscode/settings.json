@@ -1,0 +1,3 @@
+{
+	"exportall.config.folderListener": ["/src/class", "/src/fn", "/src/math", "/src/obj", "/src/ts", "/src"]
+}

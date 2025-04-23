@@ -1,4 +1,4 @@
-import { UnknownRecord } from "../ts/types.js";
+import { UnknownRecord } from "../ts/types";
 
 /**
  * stringifies and then parses a object to convert it to a JSON supported object.

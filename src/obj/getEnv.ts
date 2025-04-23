@@ -1,5 +1,5 @@
-import { isObject } from "../ts/isTypeOf.js";
-import { UnknownRecord } from "../ts/types.js";
+import { isObject } from "../ts/isTypeOf";
+import { UnknownRecord } from "../ts/types";
 
 type EnvDict = { [key: string]: string | EnvDict };
 /**

@@ -1,4 +1,4 @@
-import type { AnyRecord } from "../ts/types.js";
+import type { AnyRecord } from "../ts/types";
 
 /**
  * Safely sets missing values on obj using default values from defaultObject

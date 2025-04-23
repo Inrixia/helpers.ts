@@ -1,4 +1,4 @@
-import type { VoidFn } from "../ts/types.js";
+import type { VoidFn } from "../ts/types";
 
 export type Receiver<V> = (value: V) => unknown;
 export type Emit<V> = (eventValue: V, onError: (err: unknown) => unknown) => Promise<unknown>;

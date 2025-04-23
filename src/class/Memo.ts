@@ -33,7 +33,7 @@ export class Memo {
 		const _fn = ((...args: Parameters<G>) => cache.get(args) ?? setReturnValue(cache, args, generator(...args))) as O;
 		// Add a method to clear a specific cache entry based on arguments or all if nothing passed
 		_fn.clear = (...args: Parameters<G>) => {
-			if (args.length === 0) cache.clear();
+			if (args.length === 0) return cache.clear();
 			cache.delete(args);
 		};
 		return _fn;

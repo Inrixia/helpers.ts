@@ -31,14 +31,23 @@ export type OptionalKeys<T> = Exclude<keyof T, RequiredKeys<T>>;
 export type RequiredOnly<T> = Pick<T, RequiredKeys<T> & keyof T>;
 export type OptionalOnly<T> = Pick<T, OptionalKeys<T> & keyof T>;
 
+// Anys
 export type AnyKey = string | number | symbol;
-export type UnknownRecord = Record<AnyKey, unknown>;
 export type AnyRecord = Record<AnyKey, any>;
+export type AnyMap = Map<any, any>;
+export type AnyFn = (...args: any[]) => any;
 
+// Unknowns
+export type UnknownRecord = Record<AnyKey, unknown>;
+export type UnknownMap = Map<unknown, unknown>;
+export type UnknownFn = (...args: unknown[]) => unknown;
+
+// Voids
+export type VoidLike = void | undefined;
 export type VoidFn = () => MaybePromise<VoidLike>;
 
+// Maybeh...
 export type MaybePromise<T> = T | Promise<T>;
-export type VoidLike = void | undefined;
 
 export type Constructor = abstract new (...args: any) => any;
 export type Primitives = StringConstructor | NumberConstructor | BooleanConstructor;

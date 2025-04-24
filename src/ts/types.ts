@@ -36,6 +36,7 @@ export type AnyKey = string | number | symbol;
 export type AnyRecord = Record<AnyKey, any>;
 export type AnyMap = Map<any, any>;
 export type AnyFn = (...args: any[]) => any;
+export type AnyAsyncFn = (...args: any[]) => Promise<any>;
 
 // Unknowns
 export type UnknownRecord = Record<AnyKey, unknown>;

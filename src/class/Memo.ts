@@ -13,7 +13,7 @@ export interface MemoMap<K extends any[] = any[], V extends any = any> {
 	clear: () => void;
 }
 
-const setReturnValue = <M extends MemoMap, R extends Parameters<M["set"]>["1"]>(map: M, args: Parameters<M["set"]>["0"], value: R): R => {
+const mapSetReturnV = <M extends MemoMap, R extends Parameters<M["set"]>["1"]>(map: M, args: Parameters<M["set"]>["0"], value: R): R => {
 	map.set(args, value);
 	return value;
 };
@@ -30,7 +30,7 @@ export class Memo {
 		// Handle cases where arguments are ignored or the function takes no arguments
 		if (generator.length === 0) return Memo.argless(generator);
 
-		const _fn = ((...args: Parameters<G>) => cache.get(args) ?? setReturnValue(cache, args, generator(...args))) as O;
+		const _fn = ((...args: Parameters<G>) => cache.get(args) ?? mapSetReturnV(cache, args, generator(...args))) as O;
 		// Add a method to clear a specific cache entry based on arguments or all if nothing passed
 		_fn.clear = (...args: Parameters<G>) => {
 			if (args.length === 0) return cache.clear();

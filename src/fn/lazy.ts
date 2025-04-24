@@ -1,6 +1,6 @@
 import type { AnyFn } from "../ts";
 
-export const lazy = <F extends AnyFn, G extends () => F>(generator: G): F => {
-	let fn: F | undefined;
-	return ((...args) => (fn ??= generator())(...args)) as F;
+export const lazy = <G extends () => AnyFn>(generator: G): ReturnType<G> => {
+	let fn: ReturnType<G> | undefined;
+	return ((...args) => (fn ??= generator() as ReturnType<G>)(...args)) as ReturnType<G>;
 };

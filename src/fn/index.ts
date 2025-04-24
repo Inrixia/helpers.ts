@@ -1,5 +1,6 @@
 export * from "./asyncDebounce";
 export * from "./debounce";
+export * from "./lazy";
 export * from "./loopError";
 export * from "./registerEmitter";
 export * from "./retry";

@@ -4,18 +4,15 @@ import type { AnyFn } from "../ts";
 export interface UnloadFn extends AnyFn {
 	source?: string;
 }
-export interface UnloadableCollection {
-	add: (unload: UnloadFn) => void;
-	delete: (unload: UnloadFn) => boolean;
-}
-export type NullishInloadableCollection = UnloadableCollection | null;
+export type UnloadFnSet = Set<UnloadFn>;
+export type NullishUnloadFnSet = UnloadFnSet | null;
 
 type EmitterWithUnloads<E extends EventEmitter> = Omit<E, "on" | "once"> & {
-	on: (unloads: NullishInloadableCollection, ...args: Parameters<E["on"]>) => EmitterWithUnloads<E>;
-	once: (unloads: NullishInloadableCollection, ...args: Parameters<E["once"]>) => EmitterWithUnloads<E>;
+	on: (unloads: NullishUnloadFnSet, ...args: Parameters<E["on"]>) => EmitterWithUnloads<E>;
+	once: (unloads: NullishUnloadFnSet, ...args: Parameters<E["once"]>) => EmitterWithUnloads<E>;
 };
 
-export const emitterWithUnloads = <E extends EventEmitter, UC extends NullishInloadableCollection>(
+export const emitterWithUnloads = <E extends EventEmitter, UC extends NullishUnloadFnSet>(
 	eventEmitter: E,
 	emitterUnloads: UC,
 	eventEmitterName?: string

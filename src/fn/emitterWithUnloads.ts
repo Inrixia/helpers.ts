@@ -7,23 +7,22 @@ export interface UnloadFn extends AnyFn {
 export type UnloadFnSet = Set<UnloadFn>;
 export type NullishUnloadFnSet = UnloadFnSet | null;
 
-type EmitterWithUnloads<E extends EventEmitter> = Omit<E, "on" | "once"> & {
-	on: (unloads: NullishUnloadFnSet, ...args: Parameters<E["on"]>) => EmitterWithUnloads<E>;
-	once: (unloads: NullishUnloadFnSet, ...args: Parameters<E["once"]>) => EmitterWithUnloads<E>;
+type UnloadableEmitter<E extends EventEmitter> = E & {
+	onU: (unloads: NullishUnloadFnSet, ...args: Parameters<E["on"]>) => UnloadFn;
+	onceU: (unloads: NullishUnloadFnSet, ...args: Parameters<E["once"]>) => UnloadFn;
 };
-
-export const emitterWithUnloads = <E extends EventEmitter, UC extends NullishUnloadFnSet>(
+export const unloadableEmitter = <E extends EventEmitter, UC extends NullishUnloadFnSet>(
 	eventEmitter: E,
 	emitterUnloads: UC,
 	eventEmitterName?: string
-): EmitterWithUnloads<E> => {
+): UnloadableEmitter<E> => {
 	const originalOn = eventEmitter.on.bind(eventEmitter);
 	const originalOnce = eventEmitter.once.bind(eventEmitter);
 	const originalRemoveListener = eventEmitter.removeListener.bind(eventEmitter);
 
-	const emitterWithUnloads: EmitterWithUnloads<E> = Object.assign({} as any, eventEmitter);
+	const emitterWithUnloads = eventEmitter as UnloadableEmitter<E>;
 
-	emitterWithUnloads.on = (unloads, eventName, listener) => {
+	emitterWithUnloads.onU = (unloads, eventName, listener) => {
 		const unload: UnloadFn = () => {
 			originalRemoveListener(eventName, listener);
 			unloads?.delete(unload);
@@ -35,10 +34,10 @@ export const emitterWithUnloads = <E extends EventEmitter, UC extends NullishUnl
 		emitterUnloads?.add(unload);
 		originalOn(eventName, listener);
 
-		return emitterWithUnloads;
+		return unload;
 	};
 
-	emitterWithUnloads.once = (unloads, eventName, listener) => {
+	emitterWithUnloads.onceU = (unloads, eventName, listener) => {
 		const unload: UnloadFn = () => {
 			originalRemoveListener(eventName, wrapper);
 			unloads?.delete(unload);
@@ -58,7 +57,7 @@ export const emitterWithUnloads = <E extends EventEmitter, UC extends NullishUnl
 		emitterUnloads?.add(unload);
 		originalOnce(eventName, wrapper);
 
-		return emitterWithUnloads;
+		return unload;
 	};
 	return emitterWithUnloads;
 };

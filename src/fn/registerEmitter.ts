@@ -39,6 +39,10 @@ export function registerEmitter<V>(registerEmitter?: AddEmitter<V>): [onEvent: A
 		await Promise.all(promises);
 	};
 	const addReceiver: AddReceiver<V> = (unloads: Set<VoidFn>, cb: Receiver<V>) => {
+		if (registerEmitter) {
+			registerEmitter(onEventValue);
+			registerEmitter = undefined;
+		}
 		listeners.add(cb);
 		const unload = () => {
 			listeners.delete(cb);
@@ -47,9 +51,6 @@ export function registerEmitter<V>(registerEmitter?: AddEmitter<V>): [onEvent: A
 		unloads.add(unload);
 		return unload;
 	};
-	if (registerEmitter) {
-		registerEmitter(onEventValue);
-		return addReceiver;
-	}
+	if (registerEmitter) return addReceiver;
 	return [addReceiver, onEventValue];
 }

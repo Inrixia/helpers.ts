@@ -1,6 +1,7 @@
 export * from "./asyncDebounce";
 export * from "./debounce";
 export * from "./emitterWithUnloads";
+export * from "./fetch";
 export * from "./lazy";
 export * from "./loopError";
 export * from "./registerEmitter";

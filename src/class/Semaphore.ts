@@ -28,7 +28,7 @@ export class Semaphore {
 		});
 	}
 
-	public async with<F extends AnyFn>(cb: F): Promise<ReturnType<F>> {
+	public async with<F extends AnyFn>(cb: F): Promise<Awaited<ReturnType<F>>> {
 		const release = await this.obtain();
 		try {
 			return await cb();

@@ -1,3 +1,5 @@
+import type { AnyFn } from "../ts";
+
 export class Semaphore {
 	private readonly _queue: (() => void)[] = [];
 	constructor(private avalibleSlots: number) {}
@@ -24,5 +26,14 @@ export class Semaphore {
 				r(release);
 			});
 		});
+	}
+
+	public async with<F extends AnyFn>(cb: F): Promise<ReturnType<F>> {
+		const release = await this.obtain();
+		try {
+			return await cb();
+		} finally {
+			release();
+		}
 	}
 }

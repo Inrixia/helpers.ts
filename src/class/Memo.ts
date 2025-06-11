@@ -13,11 +13,6 @@ export interface MemoMap<K extends any[] = any[], V extends any = any> {
 	clear: () => void;
 }
 
-const mapSetReturnV = <M extends MemoMap, R extends Parameters<M["set"]>["1"]>(map: M, args: Parameters<M["set"]>["0"], value: R): R => {
-	map.set(args, value);
-	return value;
-};
-
 /**
  * Memoizes a function with a custom cache implementation.
  *
@@ -28,7 +23,15 @@ const mapSetReturnV = <M extends MemoMap, R extends Parameters<M["set"]>["1"]>(m
 export const withCache = <G extends AnyFn, O extends Memoized<G>, C extends MemoMap>(generator: G, cache: C): O => {
 	if (generator.length === 0) return memoizeArgless(generator);
 
-	const _fn = ((...args: Parameters<G>) => cache.get(args) ?? mapSetReturnV(cache, args, generator(...args))) as O;
+	const _fn = ((...args: Parameters<G>) => {
+		const cachedValue = cache.get(args);
+		if (cachedValue !== undefined) return cachedValue;
+		const newValue: ReturnType<G> = generator(...args);
+		cache.set(args, newValue);
+		// Dont cache errors!
+		if (<any>newValue instanceof Promise) newValue?.catch(() => cache.delete(args));
+		return newValue;
+	}) as O;
 	_fn.clear = (...args: Parameters<G>) => {
 		if (args.length === 0) return cache.clear();
 		cache.delete(args);
@@ -44,7 +47,11 @@ export const withCache = <G extends AnyFn, O extends Memoized<G>, C extends Memo
  */
 export const memoizeArgless = <G extends AnyFn, O extends Memoized<G>>(generator: G): O => {
 	let cache: ReturnType<G> | undefined;
-	const _fn = (() => (cache ??= generator())) as O;
+	const _fn = (() => {
+		cache ??= generator();
+		// Dont cache errors!
+		if (<any>cache instanceof Promise) cache?.catch(() => (cache = undefined));
+	}) as O;
 	_fn.clear = () => (cache = undefined);
 	return _fn;
 };

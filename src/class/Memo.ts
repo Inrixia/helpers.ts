@@ -67,12 +67,16 @@ export const memoizeArgless = <G extends AnyFn, O extends Memoized<G>>(generator
 			(<Promise<ReturnType<G>>>cache)?.catch((e) => {
 				cache = undefined;
 				cacheSet = false;
+				throw e;
 			});
 		}
 
 		return cache;
 	}) as O;
-	_fn.clear = () => (cache = undefined);
+	_fn.clear = () => {
+		cache = undefined;
+		cacheSet = false;
+	};
 	return _fn;
 };
 

@@ -1,5 +1,3 @@
-import { UnknownRecord } from "../ts/types";
-
 /**
  * stringifies and then parses a object to convert it to a JSON supported object.
  * @param obj Object to convert.
@@ -13,4 +11,4 @@ import { UnknownRecord } from "../ts/types";
  * console.log(a == b) -> true
  */
 
-export const objectify = (obj: UnknownRecord): UnknownRecord => JSON.parse(JSON.stringify(obj));
+export const objectify = <T>(obj: T): T => JSON.parse(JSON.stringify(obj));

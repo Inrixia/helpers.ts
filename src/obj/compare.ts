@@ -1,6 +1,6 @@
-import { isObject } from "../ts/isTypeOf";
-import { typeOf } from "../ts/typeOf";
-import { UnknownRecord } from "../ts/types";
+import { isObject } from "../ts/isTypeOf.js";
+import { typeOf } from "../ts/typeOf.js";
+import { UnknownRecord } from "../ts/types.js";
 
 export type TypeCompareResult = boolean | { expectedType: string; received: string; location: string };
 export type ObjTypes = { [key: string]: string | string[] | ObjTypes | ObjTypes[] };
@@ -24,7 +24,7 @@ export const deepTypeCompare = (target: UnknownRecord, types: ObjTypes, location
 				// target.property and types.property are arrays
 				// Check each item in target.property against types.property[0]
 				const childCheckType = types[key];
-				for (const targetItem of targetValue) {
+				for (const targetItem of <any>targetValue) {
 					const targetType = typeOf(targetItem);
 					// If the array entry is a object then check it
 					if (targetType === "object") return deepTypeCompare(targetItem, childCheckType as unknown as ObjTypes, `${location}.${key}`);

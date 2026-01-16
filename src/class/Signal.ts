@@ -1,4 +1,4 @@
-import type { VoidFn } from "../ts/types";
+import type { VoidFn } from "../ts/types.js";
 
 export type SignalChange<T> = (next: T, previous?: T) => unknown;
 /**

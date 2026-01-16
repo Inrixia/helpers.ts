@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"target": "ESNEXT",
-		"module": "Preserve",
+		"module": "NodeNext",
 		"declaration": true,
 		"declarationMap": true,
 		"sourceMap": true,

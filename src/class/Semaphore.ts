@@ -1,4 +1,4 @@
-import type { AnyFn } from "../ts";
+import type { AnyFn } from "../ts/types.js";
 
 export class Semaphore {
 	private readonly _queue: (() => void)[] = [];

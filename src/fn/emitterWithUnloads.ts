@@ -1,5 +1,5 @@
 import type EventEmitter from "events";
-import type { AnyFn } from "../ts";
+import type { AnyFn } from "../ts/types.js";
 
 export interface UnloadFn extends AnyFn {
 	source?: string;

@@ -1,5 +1,5 @@
-import { ArgsMap } from "../class";
-import type { AnyAsyncFn } from "../ts/types";
+import { ArgsMap } from "../class/ArgsMap.js";
+import type { AnyAsyncFn } from "../ts/types.js";
 
 export const asyncDebounce = <G extends AnyAsyncFn>(generator: G, ignoreArgs = false): G => {
 	if (ignoreArgs || generator.length === 0) {

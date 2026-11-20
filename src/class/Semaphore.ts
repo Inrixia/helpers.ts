@@ -4,10 +4,7 @@ export class Semaphore {
 	private readonly _queue: (() => void)[] = [];
 	constructor(private avalibleSlots: number) {}
 
-	/**
-	 * @param priority If true and no slot is free, wait at the front of the queue instead of the back.
-	 */
-	public async obtain(priority = false): Promise<() => void> {
+	private async _obtain(first: boolean): Promise<() => void> {
 		let released = false;
 		const release = () => {
 			if (released) return;
@@ -28,17 +25,39 @@ export class Semaphore {
 				this.avalibleSlots--;
 				r(release);
 			};
-			if (priority) this._queue.unshift(start);
+			if (first) this._queue.unshift(start);
 			else this._queue.push(start);
 		});
 	}
 
-	public async with<F extends AnyFn>(cb: F, priority = false): Promise<Awaited<ReturnType<F>>> {
-		const release = await this.obtain(priority);
+	private async _with<F extends AnyFn>(cb: F, first: boolean): Promise<Awaited<ReturnType<F>>> {
+		const release = await this._obtain(first);
 		try {
 			return await cb();
 		} finally {
 			release();
 		}
+	}
+
+	public obtain(): Promise<() => void> {
+		return this._obtain(false);
+	}
+
+	/**
+	 * Like `obtain`, but if no slot is free, waits at the front of the queue instead of the back.
+	 */
+	public obtainFirst(): Promise<() => void> {
+		return this._obtain(true);
+	}
+
+	public with<F extends AnyFn>(cb: F): Promise<Awaited<ReturnType<F>>> {
+		return this._with(cb, false);
+	}
+
+	/**
+	 * Like `with`, but if no slot is free, waits at the front of the queue instead of the back.
+	 */
+	public withFirst<F extends AnyFn>(cb: F): Promise<Awaited<ReturnType<F>>> {
+		return this._with(cb, true);
 	}
 }

@@ -1,4 +1,5 @@
-export const statusOK = (status: number): boolean => status !== undefined && status >= 200 && status < 300;
+/** True for a 2xx status. Rejects anything that isn't a real HTTP status code. */
+export const statusOK = (status: number): boolean => Number.isInteger(status) && status >= 200 && status < 300;
 export const rejectNotOk = (res: Response): Response => {
 	if (statusOK(res.status)) return res;
 	throw new Error(`${res.status} ${res.statusText}`, { cause: res.url });

@@ -13,29 +13,55 @@ export type ObjTypes = { [key: string]: string | string[] | ObjTypes | ObjTypes[
  */
 export const deepTypeCompare = (target: UnknownRecord, types: ObjTypes, location = "target"): TypeCompareResult => {
 	if (!(isObject(target) && isObject(types))) return { location, expectedType: "object", received: `${target}:${typeOf(target)}` };
-	for (const key in target) {
-		const targetValue = target[key];
-		if (isObject(targetValue)) {
-			// If target.property is a object then check its child properties
-			const same = deepTypeCompare(targetValue, types[key] as ObjTypes, `${location}.${key}`);
-			if (same !== true) return same;
-		} else {
-			if (Array.isArray(targetValue) && Array.isArray(types[key])) {
-				// target.property and types.property are arrays
-				// Check each item in target.property against types.property[0]
-				const childCheckType = types[key];
-				for (const targetItem of <any>targetValue) {
-					const targetType = typeOf(targetItem);
-					// If the array entry is a object then check it
-					if (targetType === "object") return deepTypeCompare(targetItem, childCheckType as unknown as ObjTypes, `${location}.${key}`);
-					else return compareTwo(<string | string[]>childCheckType, targetItem, `${location}.${key}`);
+
+	// Walk the schema rather than the target. Iterating the target's keys meant a
+	// key that only exists in `types` was never visited, so a missing field passed.
+	for (const key of Object.keys(types)) {
+		const expected = types[key];
+		const actual = target[key];
+		const at = `${location}.${key}`;
+
+		if (Array.isArray(expected)) {
+			// An array schema is ambiguous. When the value is an array it means "an
+			// array whose elements match expected[0]". When it isn't, it means "one
+			// of these types", which is compareTwo's union semantics. The original
+			// code disambiguated on the target's runtime type too, so keep that.
+			if (Array.isArray(actual)) {
+				const elementSchema = expected[0];
+				// Check every element. This loop used to return from inside its first
+				// iteration, so only element 0 was ever validated.
+				for (let index = 0; index < actual.length; index++) {
+					const result = isObject(elementSchema)
+						? deepTypeCompare(<UnknownRecord>actual[index], <ObjTypes>elementSchema, `${at}.${index}`)
+						: compareTwo(<string | string[]>elementSchema, actual[index], `${at}.${index}`);
+					if (result !== true) return result;
 				}
-			} else {
-				const same = compareTwo(<string | string[]>types[key], target[key], `${location}.${key}`);
-				if (same !== true) return same;
+				continue;
 			}
+			const union = compareTwo(<string | string[]>expected, actual, at);
+			if (union !== true) return union;
+			continue;
 		}
+
+		if (isObject(expected)) {
+			const same = deepTypeCompare(<UnknownRecord>actual, expected, at);
+			if (same !== true) return same;
+			continue;
+		}
+
+		const same = compareTwo(<string | string[]>expected, actual, at);
+		if (same !== true) return same;
 	}
+
+	// Undescribed keys on the target were previously reported as a type mismatch
+	// as a side effect of walking the target. Keep reporting them explicitly.
+	for (const key of Object.keys(target)) {
+		// hasOwn, not `in`: `in` walks the prototype chain, so a target key like
+		// "toString" would have been treated as described by every schema.
+		if (Object.hasOwn(types, key)) continue;
+		return { location: `${location}.${key}`, expectedType: "(not described in types)", received: `${target[key]}:${typeOf(target[key])}` };
+	}
+
 	return true;
 };
 

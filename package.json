@@ -9,7 +9,10 @@
 		"build": "rimraf dist && tsc",
 		"prepare": "rimraf dist && tsc",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"format": "prettier --write --end-of-line auto ."
 	},
 	"repository": {
 		"type": "git",
@@ -22,9 +25,15 @@
 	},
 	"homepage": "https://github.com/Inrixia/Helpers#readme",
 	"devDependencies": {
+		"@eslint/js": "^10.0.1",
 		"@types/node": "^25.0.9",
+		"eslint": "^10.15.0",
+		"eslint-config-prettier": "^10.1.8",
+		"globals": "^17.14.0",
+		"prettier": "^3.10.1",
 		"rimraf": "^6.1.2",
 		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.74.0",
 		"vitest": "^5.1.1"
 	},
 	"dependencies": {

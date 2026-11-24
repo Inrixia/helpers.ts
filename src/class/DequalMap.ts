@@ -8,8 +8,6 @@ import { dequal } from "dequal";
  * as it has to iterate through all keys if the key isnt immediately in the underlying map.
  */
 export class DequalMap<K extends object, V> extends Map<K, V> {
-	private _keys: Set<K> = new Set();
-
 	constructor(entries?: ReadonlyArray<readonly [K, V]> | null) {
 		super();
 		if (entries) {
@@ -19,9 +17,13 @@ export class DequalMap<K extends object, V> extends Map<K, V> {
 
 	public findKey(key: K): K | undefined {
 		if (super.has(key)) return key;
-		for (const storedKey of this._keys) {
+		// Iterate the map's own keys. A separate Set of keys used to be kept
+		// alongside the map purely so it could be iterated here, which duplicated
+		// what Map already stores and had to be updated in set/delete/clear.
+		for (const storedKey of super.keys()) {
 			if (dequal(storedKey, key)) return storedKey;
 		}
+		return undefined;
 	}
 
 	override set(key: K, value: V): this {
@@ -31,7 +33,6 @@ export class DequalMap<K extends object, V> extends Map<K, V> {
 			return this;
 		}
 		super.set(key, value);
-		this._keys.add(key);
 		return this;
 	}
 
@@ -44,6 +45,7 @@ export class DequalMap<K extends object, V> extends Map<K, V> {
 	override get(key: K): V | undefined {
 		const existingKey = this.findKey(key);
 		if (existingKey !== undefined) return super.get(existingKey);
+		return undefined;
 	}
 
 	override has(key: K): boolean {
@@ -53,13 +55,6 @@ export class DequalMap<K extends object, V> extends Map<K, V> {
 	override delete(key: K): boolean {
 		const _key = this.findKey(key);
 		if (_key === undefined) return false;
-		this._keys.delete(_key);
-		super.delete(_key);
-		return true;
-	}
-
-	override clear(): void {
-		super.clear();
-		this._keys.clear();
+		return super.delete(_key);
 	}
 }

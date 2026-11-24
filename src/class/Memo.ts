@@ -31,11 +31,14 @@ export const withCache = <G extends AnyFn, O extends Memoized<G>, C extends Memo
 		cache.set(args, newValue);
 
 		// Dont cache errored promises!
-		if (<any>newValue instanceof Promise) {
-			(<Promise<ReturnType<G>>>newValue)?.catch((e) => {
-				cache.delete(args);
-				throw e;
-			});
+		// Widened first: `ReturnType<G>` is generic, so instanceof can't be applied
+		// to it directly. Widening to unknown does that without an `any` cast.
+		const settled: unknown = newValue;
+		if (settled instanceof Promise) {
+			// Drop the entry so a retry can succeed, but do not rethrow: the caller
+			// already receives this rejection, and rethrowing here would create a
+			// second rejected promise that nobody handles.
+			void settled.catch(() => cache.delete(args));
 		}
 
 		return newValue;
@@ -63,11 +66,12 @@ export const memoizeArgless = <G extends AnyFn, O extends Memoized<G>>(generator
 		cacheSet = true;
 
 		// Dont cache errored promises!
-		if (<any>cache instanceof Promise) {
-			(<Promise<ReturnType<G>>>cache)?.catch((e) => {
+		const settled: unknown = cache;
+		if (settled instanceof Promise) {
+			// See withCache: swallow here and let the caller's rejection be the only one.
+			void settled.catch(() => {
 				cache = undefined;
 				cacheSet = false;
-				throw e;
 			});
 		}
 

@@ -7,9 +7,11 @@
  */
 
 export const chunkArray = <T extends unknown[] | string>(array: T, chunkSize: number): T[] => {
+	if (!Number.isInteger(chunkSize) || chunkSize < 1) throw new RangeError(`chunkSize must be a positive integer, received ${chunkSize}`);
 	if (array.length < chunkSize) return [array];
-	let i, j;
-	const returnArray: T[] = [];
-	for (i = 0, j = array.length; i < j; i += chunkSize) returnArray.push(array.slice(i, i + chunkSize) as T);
-	return returnArray;
+	const chunks: T[] = [];
+	for (let offset = 0; offset < array.length; offset += chunkSize) {
+		chunks.push(array.slice(offset, offset + chunkSize) as T);
+	}
+	return chunks;
 };

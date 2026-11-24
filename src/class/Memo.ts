@@ -22,8 +22,10 @@ export interface MemoMap<K extends any[] = any[], V extends any = any> {
  * @returns {O} The memoized function with a `clear` method.
  */
 export const withCache = <G extends AnyFn, O extends Memoized<G>, C extends MemoMap>(generator: G, cache: C): O => {
-	if (generator.length === 0) return memoizeArgless(generator);
-
+	// No arity sniffing. Function.length is 0 for any function whose first
+	// parameter has a default, or which uses a rest parameter, so keying the
+	// argless path off it silently ignored every argument for those functions.
+	// Use `memoizeArgless` when you actually want the arguments ignored.
 	const _fn = ((...args: Parameters<G>) => {
 		if (cache.has(args)) return cache.get(args);
 
@@ -44,6 +46,9 @@ export const withCache = <G extends AnyFn, O extends Memoized<G>, C extends Memo
 		if (args.length === 0) return cache.clear();
 		cache.delete(args);
 	};
+	// The wrapper is built with `(...args)`, so its length would report 0.
+	// Mirror the wrapped function's arity so introspection sees the same shape.
+	Object.defineProperty(_fn, "length", { value: generator.length, configurable: true });
 	return _fn;
 };
 

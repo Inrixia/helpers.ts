@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      - run: pnpm test:coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 14
+
+      # Badges describe the default branch. A pull request run has nothing to
+      # publish and its numbers would describe unmerged code, so this is push
+      # only (which the trigger above already restricts to master).
+      - name: Coverage badges
+        if: github.event_name == 'push'
+        run: pnpm coverage:badge
+
+      # The badges are read over jsDelivr by shields.io, so they have to live in
+      # the repo. jsDelivr rather than raw.githubusercontent.com: shields fetches
+      # the json on every render and raw rate-limits it, which shows up as a
+      # broken badge. jsDelivr caches for up to 12h, so a badge can trail the
+      # file by that much.
+      # Commits made with GITHUB_TOKEN don't start another workflow run, so this
+      # can't loop.
+      - name: Commit coverage badges
+        if: github.event_name == 'push'
+        continue-on-error: true
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "ci: update coverage badges"
+          file_pattern: .github/badges/*.json

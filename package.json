@@ -9,7 +9,9 @@
 		"build": "rimraf dist && tsc",
 		"prepare": "rimraf dist && tsc",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"coverage:badge": "node test/coverageBadge.js"
 	},
 	"repository": {
 		"type": "git",
@@ -23,6 +25,7 @@
 	"homepage": "https://github.com/Inrixia/Helpers#readme",
 	"devDependencies": {
 		"@types/node": "^25.0.9",
+		"@vitest/coverage-v8": "^5.1.1",
 		"rimraf": "^6.1.2",
 		"typescript": "^5.9.3",
 		"vitest": "^5.1.1"

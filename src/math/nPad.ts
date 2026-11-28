@@ -11,7 +11,12 @@
  * // triplePaddedNumber = "006"
  */
 export const nPad = (num: number | string, zeros = 2): string => {
-	num = num.toString();
-	while (num.length < zeros) num = "0" + num;
-	return num;
+	const text = String(num);
+	// Pad the magnitude and keep the sign at the front. Prepending zeros to the
+	// whole string put them in front of the minus sign instead: -5 became "0-5".
+	const negative = text.startsWith("-");
+	const magnitude = negative ? text.slice(1) : text;
+	const width = Math.max(0, zeros - (negative ? 1 : 0));
+	const padded = magnitude.padStart(width, "0");
+	return negative ? `-${padded}` : padded;
 };

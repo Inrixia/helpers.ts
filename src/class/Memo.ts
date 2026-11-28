@@ -22,8 +22,10 @@ export interface MemoMap<K extends any[] = any[], V = any> {
  * @returns {O} The memoized function with a `clear` method.
  */
 export const withCache = <G extends AnyFn, O extends Memoized<G>, C extends MemoMap>(generator: G, cache: C): O => {
-	if (generator.length === 0) return memoizeArgless(generator);
-
+	// No arity sniffing. Function.length is 0 for any function whose first
+	// parameter has a default, or which uses a rest parameter, so keying the
+	// argless path off it silently ignored every argument for those functions.
+	// Use `memoizeArgless` when you actually want the arguments ignored.
 	const _fn = ((...args: Parameters<G>) => {
 		if (cache.has(args)) return cache.get(args);
 
@@ -31,11 +33,14 @@ export const withCache = <G extends AnyFn, O extends Memoized<G>, C extends Memo
 		cache.set(args, newValue);
 
 		// Dont cache errored promises!
-		if (<any>newValue instanceof Promise) {
-			(<Promise<ReturnType<G>>>newValue)?.catch((e) => {
-				cache.delete(args);
-				throw e;
-			});
+		// Widened first: `ReturnType<G>` is generic, so instanceof can't be applied
+		// to it directly. Widening to unknown does that without an `any` cast.
+		const settled: unknown = newValue;
+		if (settled instanceof Promise) {
+			// Drop the entry so a retry can succeed, but do not rethrow: the caller
+			// already receives this rejection, and rethrowing here would create a
+			// second rejected promise that nobody handles.
+			void settled.catch(() => cache.delete(args));
 		}
 
 		return newValue;
@@ -44,6 +49,9 @@ export const withCache = <G extends AnyFn, O extends Memoized<G>, C extends Memo
 		if (args.length === 0) return cache.clear();
 		cache.delete(args);
 	};
+	// The wrapper is built with `(...args)`, so its length would report 0.
+	// Mirror the wrapped function's arity so introspection sees the same shape.
+	Object.defineProperty(_fn, "length", { value: generator.length, configurable: true });
 	return _fn;
 };
 
@@ -63,11 +71,12 @@ export const memoizeArgless = <G extends AnyFn, O extends Memoized<G>>(generator
 		cacheSet = true;
 
 		// Dont cache errored promises!
-		if (<any>cache instanceof Promise) {
-			(<Promise<ReturnType<G>>>cache)?.catch((e) => {
+		const settled: unknown = cache;
+		if (settled instanceof Promise) {
+			// See withCache: swallow here and let the caller's rejection be the only one.
+			void settled.catch(() => {
 				cache = undefined;
 				cacheSet = false;
-				throw e;
 			});
 		}
 

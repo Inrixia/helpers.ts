@@ -5,6 +5,19 @@
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./test": {
+			"types": "./dist/test.d.ts",
+			"default": "./dist/test.js"
+		},
+		"./dist/*": "./dist/*",
+		"./package.json": "./package.json"
+	},
+	"sideEffects": false,
 	"scripts": {
 		"build": "rimraf dist && tsc",
 		"prepare": "rimraf dist && tsc",
@@ -13,6 +26,17 @@
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --write --end-of-line auto ."
+		"updateSkills": "node .agents/update-skills.mjs"
+	},
+	"agentSkills": {
+		"source": "Inrixia/.claude",
+		"ref": "main",
+		"skills": [
+			"code-design",
+			"review",
+			"typescript",
+			"vitest"
+		]
 	},
 	"repository": {
 		"type": "git",

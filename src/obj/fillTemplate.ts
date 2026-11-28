@@ -18,10 +18,13 @@ import { UnknownRecord } from "../ts/types.js";
  */
 
 export const fillTemplate = (contentKeys: UnknownRecord, templatestring: string, parent = ""): string => {
-	for (const key in contentKeys) {
+	for (const key of Object.keys(contentKeys)) {
 		const value = contentKeys[key];
 		if (isObject(value)) templatestring = fillTemplate(value, templatestring, `${parent}${key}.`);
-		else templatestring = templatestring.replaceAll(new RegExp(`{${parent}${key}}`, "g"), String(value));
+		// A literal search string instead of a RegExp, so a key containing regex
+		// metacharacters can't throw or over-match. The replacer is a function so
+		// replacement patterns in the value ($$, $&, $1, $`) stay literal.
+		else templatestring = templatestring.replaceAll(`{${parent}${key}}`, () => String(value));
 	}
 	return templatestring;
 };

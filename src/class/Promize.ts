@@ -4,19 +4,28 @@ export class Promize<T> implements Promise<T> {
 	public rej!: (reason?: any) => void;
 
 	/**
-	 * Immdiately resolves the promise with the given value if provided.
+	 * Resolves immediately when a value is supplied.
+	 *
+	 * `new Promize(undefined)` resolves with `undefined`. Constructing with no
+	 * argument leaves the promise pending until `res` is called. The two cases
+	 * are distinguished by argument presence rather than by an `undefined` check.
 	 */
-	constructor(resValue?: T) {
-		this.set(resValue);
+	constructor(...args: [value: T] | []) {
+		this.set(...args);
 	}
 
 	/**
 	 * Recreate the underlying promise
-	 * @param resValue If not undefined, resolves the internal promise with given value on creation.
+	 * @param resValue If supplied (even as `undefined`), resolves the internal promise with it.
+	 *
+	 * Any handler attached to the previous promise is left pending forever, so
+	 * re-attach your handlers after calling this.
 	 */
-	set(resValue?: T): void {
+	set(...args: [value: T] | []): void {
 		this.reset();
-		if (resValue !== undefined) this.res(resValue);
+		// `=== 1` rather than `> 0`: the length equality is what narrows the tuple
+		// union to [T], so args[0] types as T with no cast.
+		if (args.length === 1) this.res(args[0]);
 	}
 
 	/**

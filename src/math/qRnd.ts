@@ -5,6 +5,9 @@
  * @returns Rounded number
  */
 export const qRnd = (num: number, digits = 0): number => {
-	digits = 10 ** digits;
-	return ~~(num * digits) / digits;
+	const factor = 10 ** digits;
+	// Math.round, not ~~. Bitwise truncation discards everything past 2^31 and
+	// truncates toward zero instead of rounding, so 2.5 became 2 and
+	// 2147483648 became 0.
+	return Math.round(num * factor) / factor;
 };

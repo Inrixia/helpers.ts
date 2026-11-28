@@ -47,10 +47,13 @@ export const deepTypeCompare = (target: UnknownRecord, types: ObjTypes, location
  */
 
 export const compareTwo = (expectedTypes: string | string[], receivedValue: unknown, location: string): TypeCompareResult => {
-	if (!Array.isArray(expectedTypes)) expectedTypes = [expectedTypes];
+	// Normalised into a local rather than reassigning the parameter, so the caller's
+	// argument keeps its declared type throughout.
+	const expected = Array.isArray(expectedTypes) ? expectedTypes : [expectedTypes];
 	const gotType = typeOf(receivedValue);
-	for (const expectedType of expectedTypes) {
-		if (gotType !== expectedType) return { location, expectedType, received: `${receivedValue}:${gotType}` };
-	}
-	return true;
+	// A list of expected types is a union, so the value is valid if it matches
+	// any one of them. This used to return on the first non-match, which meant
+	// it only passed when the value satisfied every listed type at once.
+	if (expected.includes(gotType)) return true;
+	return { location, expectedType: expected.join(" | "), received: `${receivedValue}:${gotType}` };
 };

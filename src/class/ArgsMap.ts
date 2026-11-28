@@ -7,11 +7,20 @@
  * @template V - The type of the value.
  */
 export class ArgsMap<K extends any[], V> {
-	// Removed: implements Map<K, V>
 	private readonly root: Map<any, any> = new Map();
 	private _size: number = 0;
 	// Special symbol to mark the node holding the actual value for a key array.
 	private static readonly END_MARKER: unique symbol = Symbol("ArgsMap.end");
+
+	/**
+	 * @param entries Optional iterable of [key, value] pairs to populate the map with.
+	 * Previously any argument was silently discarded.
+	 */
+	constructor(entries?: Iterable<readonly [K, V]> | null) {
+		if (entries) {
+			for (const [key, value] of entries) this.set(key, value);
+		}
+	}
 
 	/** Returns the number of key/value pairs in the ArgsMap object. */
 	public get size(): number {
@@ -85,7 +94,6 @@ export class ArgsMap<K extends any[], V> {
 		const result = this._deleteRecursive(nextNode, key, index + 1);
 		// If deletion occurred and the child map became empty, remove it.
 		if (result.deleted && result.nodeIsEmpty) currentMap.delete(arg);
-
 		return { deleted: result.deleted, nodeIsEmpty: currentMap.size === 0 };
 	}
 
@@ -95,7 +103,11 @@ export class ArgsMap<K extends any[], V> {
 		this._size = 0;
 	}
 
-	/** Returns a new Iterator object that contains the [key, value] pairs for each element in the ArgsMap object in insertion order. */
+	/**
+	 * Returns a new Iterator object that contains the [key, value] pairs for each element
+	 * in the ArgsMap object. Order is depth-first, so a shorter key can come before a
+	 * longer key that was inserted earlier.
+	 */
 	public *entries(): IterableIterator<[K, V]> {
 		yield* this._traverseEntries([] as any, this.root);
 	}
@@ -112,7 +124,22 @@ export class ArgsMap<K extends any[], V> {
 		}
 	}
 
-	/** Returns a new Iterator object that contains the [key, value] pairs for each element in the ArgsMap object in insertion order. */
+	/** Returns a new Iterator object that contains the keys for each element in the ArgsMap object, in depth-first order. */
+	public *keys(): IterableIterator<K> {
+		for (const [key] of this.entries()) yield key;
+	}
+
+	/** Returns a new Iterator object that contains the values for each element in the ArgsMap object, in depth-first order. */
+	public *values(): IterableIterator<V> {
+		for (const [, value] of this.entries()) yield value;
+	}
+
+	/** Calls `callback` for each key/value pair in the ArgsMap object, in depth-first order. */
+	public forEach(callback: (value: V, key: K, map: this) => void, thisArg?: unknown): void {
+		for (const [key, value] of this.entries()) callback.call(thisArg, value, key, this);
+	}
+
+	/** Returns an iterator over the [key, value] pairs. Order is depth-first, matching `entries`. */
 	public [Symbol.iterator](): IterableIterator<[K, V]> {
 		return this.entries();
 	}

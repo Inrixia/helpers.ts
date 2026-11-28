@@ -1,11 +1,8 @@
 import type { AnyFn } from "../ts/types.js";
 
-interface Waiter {
-	start: () => void;
-}
-
 export class Semaphore {
-	private readonly _queue: Waiter[] = [];
+	/** One entry per queued caller: what to run when its slot frees up */
+	private readonly _queue: (() => void)[] = [];
 	/** Spelled `avalibleSlots` before; the typo is fixed here. */
 	private _availableSlots: number;
 	/**
@@ -37,7 +34,7 @@ export class Semaphore {
 			released = true;
 			this._availableSlots++;
 			// If there are queued requests, resolve the first one in the queue
-			this._queue.shift()?.start();
+			this._queue.shift()?.();
 		};
 		// If there is an available request slot, proceed immediately
 		if (this._availableSlots > 0) {
@@ -47,14 +44,12 @@ export class Semaphore {
 
 		// Otherwise, wait for a request slot to become available
 		return new Promise((resolve) => {
-			const waiter: Waiter = {
-				start: () => {
-					this._availableSlots--;
-					resolve(release);
-				},
+			const start = () => {
+				this._availableSlots--;
+				resolve(release);
 			};
-			if (first) this._queue.unshift(waiter);
-			else this._queue.push(waiter);
+			if (first) this._queue.unshift(start);
+			else this._queue.push(start);
 		});
 	}
 

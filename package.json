@@ -23,9 +23,10 @@
 		"prepare": "rimraf dist && tsc",
 		"test": "vitest run",
 		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
-		"format": "prettier --write --end-of-line auto ."
+		"format": "prettier --write --end-of-line auto .",
 		"updateSkills": "node .agents/update-skills.mjs"
 	},
 	"agentSkills": {
@@ -51,6 +52,7 @@
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
 		"@types/node": "^25.0.9",
+		"@vitest/coverage-v8": "5.1.1",
 		"eslint": "^10.15.0",
 		"eslint-config-prettier": "^10.1.8",
 		"globals": "^17.14.0",

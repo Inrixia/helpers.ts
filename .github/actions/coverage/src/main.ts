@@ -71,12 +71,7 @@ if (command === "report") {
 		await rm(commentPath, { force: true });
 		// Empty marker so the comment workflow can tell "unchanged, delete sticky comment" apart from "nothing ran"
 		await writeFile(unchangedPath, "");
-		const reason =
-			summary === undefined
-				? "no valid coverage summary"
-				: base === undefined
-					? "no base coverage summary to compare against"
-					: "coverage did not change against base";
+		const reason = summary === undefined ? "no valid coverage summary" : "coverage did not change against base";
 		console.log(`Skipped ${path.relative(root, commentPath)}: ${reason}`);
 	}
 

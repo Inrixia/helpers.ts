@@ -224,10 +224,11 @@ describe("base summary keys", () => {
 });
 
 describe("hasCoverageChanged", () => {
-	it("returns false when summary or base is missing", () => {
+	it("returns true when base is missing, and false when summary is missing against a base", () => {
 		const head = summary({ "native/a.ts": totals(90, 100) });
+		expect(hasCoverageChanged(head, undefined, root)).toBe(true);
+		expect(hasCoverageChanged(undefined, undefined, root)).toBe(true);
 		expect(hasCoverageChanged(undefined, head, root)).toBe(false);
-		expect(hasCoverageChanged(head, undefined, root)).toBe(false);
 	});
 
 	it("returns false for identical summaries", () => {

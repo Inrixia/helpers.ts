@@ -83,7 +83,7 @@ runs:
      echo "::warning::No coverage from $BASE_REF to compare against"
 
   # Always, so a failing run still reports the coverage it managed. Writes coverage/comment.md (or coverage/unchanged
-  # when a PR has no base or no coverage change) and the run page summary.
+  # when a PR has a base summary and no coverage change) and the run page summary.
   - name: Report coverage
     id: report
     if: always()
@@ -98,8 +98,8 @@ runs:
 
   # Posted by a workflow_run workflow: a PR from a fork gets a read-only token here, so the comment has
   # to come from a workflow_run, which runs in this repo with a write token and never touches the PR's code.
-  # Uploads either comment.md (changed) or an empty unchanged marker (no change / no base) so the comment workflow
-  # can tell "unchanged, delete any sticky comment" apart from "report step never ran, skip".
+  # Uploads either comment.md (changed or no base) or an empty unchanged marker (base exists and unchanged) so the
+  # comment workflow can tell "unchanged, delete any sticky comment" apart from "report step never ran, skip".
   - name: Upload coverage comment
     if: always() && github.event_name == 'pull_request'
     uses: actions/upload-artifact@v7

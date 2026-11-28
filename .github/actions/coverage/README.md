@@ -2,7 +2,7 @@
 
 Two composite actions for Vitest coverage reporting, shields.io endpoint badges, and auto-raising coverage floors:
 
-- `Inrixia/helpers.ts/.github/actions/coverage` — compares PR coverage against the base branch, writes `coverage/comment.md` when changed (or an empty `unchanged` marker when unchanged or without a base) + `GITHUB_STEP_SUMMARY`, uploads artifacts (`coverage-comment`, `coverage-summary`, `coverage-report`), and on successful pushes writes shields badges and raises coverage floors.
+- `Inrixia/helpers.ts/.github/actions/coverage` — compares PR coverage against the base branch, writes `coverage/comment.md` when changed or when no base summary is available (or an empty `unchanged` marker when unchanged against the base) + `GITHUB_STEP_SUMMARY`, uploads artifacts (`coverage-comment`, `coverage-summary`, `coverage-report`), and on successful pushes writes shields badges and raises coverage floors.
 - `Inrixia/helpers.ts/.github/actions/coverage/comment` — runs in a `workflow_run` workflow to post or delete the sticky PR comment safely even for fork PRs (never checks out or executes PR code).
 
 ## Prerequisites
@@ -35,8 +35,8 @@ steps:
 
 Runs on `workflow_run` after the CI workflow completes, without checking out PR code:
 
-- Posts or updates the sticky PR comment when `coverage/comment.md` was uploaded (coverage changed in totals, an area, or a file by at least 0.1 percentage points, or a file/area was added or removed).
-- Deletes any previously posted sticky comment when the `unchanged` marker was uploaded (coverage did not change against the base branch, or no base summary was available). `GITHUB_STEP_SUMMARY` is still always written in full on the CI run.
+- Posts or updates the sticky PR comment when `coverage/comment.md` was uploaded (coverage changed in totals, an area, or a file by at least 0.1 percentage points, a file/area was added or removed, or no base summary was available).
+- Deletes any previously posted sticky comment when the `unchanged` marker was uploaded (a base summary existed and coverage did not change against it). `GITHUB_STEP_SUMMARY` is still always written in full on the CI run.
 - Logs a warning and skips when no `coverage-comment` artifact exists (e.g. the report step never ran).
 
 ```yaml

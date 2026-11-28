@@ -211,14 +211,18 @@ const fileSection = (changes: FileChange[]) => {
 	return lines;
 };
 
-/** Whether coverage moved against the base branch in totals, areas, or files (`undefined` deltas are not a change) */
+/**
+ * Whether coverage moved against the base branch in totals, areas, or files (`undefined` deltas are not a change).
+ * Without a base summary, returns true so the PR still gets the full coverage comment.
+ */
 export const hasCoverageChanged = (
 	summary: Summary | undefined,
 	base: Summary | undefined,
 	root: string,
 	deepAreas: ReadonlySet<string> = new Set(),
 ): boolean => {
-	if (summary === undefined || base === undefined) return false;
+	if (base === undefined) return true;
+	if (summary === undefined) return false;
 	if (hasTotalsChanged(summary.total, base.total)) return true;
 
 	const areas = byArea(summary, root, deepAreas);

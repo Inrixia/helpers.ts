@@ -42,14 +42,14 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/Inrixia/Helpers.git"
+		"url": "git+https://github.com/Inrixia/helpers.ts.git"
 	},
 	"author": "Inrix",
 	"license": "ISC",
 	"bugs": {
-		"url": "https://github.com/Inrixia/Helpers/issues"
+		"url": "https://github.com/Inrixia/helpers.ts/issues"
 	},
-	"homepage": "https://github.com/Inrixia/Helpers#readme",
+	"homepage": "https://github.com/Inrixia/helpers.ts#readme",
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
 		"@types/node": "^25.0.9",

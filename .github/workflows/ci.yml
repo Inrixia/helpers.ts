@@ -40,3 +40,52 @@ jobs:
      with:
       extra-areas: |
        - src/*
+
+ # Publishes when package.json's version is not yet on npm. Auth is npm trusted publishing (OIDC), no token.
+ publish:
+  needs: test
+  if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+  runs-on: ubuntu-latest
+  permissions:
+   contents: write
+   id-token: write
+  steps:
+   - uses: actions/checkout@v7
+
+   - name: Check version
+     id: version
+     run: |
+      name=$(jq -r .name package.json)
+      version=$(jq -r .version package.json)
+      echo "version=$version" >> "$GITHUB_OUTPUT"
+      status=$(curl -sS -o /dev/null -w '%{http_code}' "https://registry.npmjs.org/$name/$version")
+      case $status in
+       200) echo "$name@$version already on npm, skipping" ;;
+       404) echo "publish=true" >> "$GITHUB_OUTPUT" ;;
+       *) echo "::error::npm registry returned $status" && exit 1 ;;
+      esac
+
+   - uses: pnpm/action-setup@v6
+     if: steps.version.outputs.publish
+     with:
+      version: 10
+
+   - uses: actions/setup-node@v7
+     if: steps.version.outputs.publish
+     with:
+      node-version: lts/*
+      registry-url: https://registry.npmjs.org
+      package-manager-cache: false
+
+   - if: steps.version.outputs.publish
+     run: pnpm install --frozen-lockfile
+
+   # Prereleases (1.2.3-beta.0) go to the "next" dist-tag so they never become "latest".
+   - if: steps.version.outputs.publish
+     run: npm publish --tag ${{ contains(steps.version.outputs.version, '-') && 'next' || 'latest' }}
+
+   - if: steps.version.outputs.publish
+     env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: v${{ steps.version.outputs.version }}
+     run: gh release view "$TAG" || gh release create "$TAG" --target "$GITHUB_SHA" --generate-notes ${{ contains(steps.version.outputs.version, '-') && '--prerelease' || '' }}

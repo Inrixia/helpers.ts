@@ -8,18 +8,15 @@ import { UnknownRecord } from "./types.js";
 export const typeOf = (
 	item: unknown
 ): "undefined" | "null" | "Inf" | "NaN" | "number" | "bigint" | "array" | "string" | "boolean" | "symbol" | "object" | "function" => {
-	switch (item) {
-		case undefined:
-			return "undefined";
-		case null:
-			return "null";
-		case Infinity:
-			return "Inf";
-	}
+	if (item === undefined) return "undefined";
+	if (item === null) return "null";
 	const typof = typeof item;
 	switch (typof) {
 		case "number":
-			if (isNaN(item as number)) return "NaN";
+			// `switch (item) { case Infinity: }` only ever matched positive
+			// infinity, so -Infinity was reported as a plain number.
+			if (item === Number.POSITIVE_INFINITY || item === Number.NEGATIVE_INFINITY) return "Inf";
+			if (Number.isNaN(item)) return "NaN";
 			return typof;
 		case "object":
 			if (Array.isArray(item)) return "array";

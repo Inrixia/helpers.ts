@@ -9,7 +9,18 @@
 		"build": "rimraf dist && tsc",
 		"prepare": "rimraf dist && tsc",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"updateSkills": "node .agents/update-skills.mjs"
+	},
+	"agentSkills": {
+		"source": "Inrixia/.claude",
+		"ref": "main",
+		"skills": [
+			"code-design",
+			"review",
+			"typescript",
+			"vitest"
+		]
 	},
 	"repository": {
 		"type": "git",

@@ -35,6 +35,15 @@ describe("envOrThrow", () => {
 			process.env[NAME] = "   ";
 			expect(() => envOrThrow(NAME)).toThrow(/set but empty/);
 		});
+
+		it("returns the blank value when allowEmpty is true", () => {
+			process.env[NAME] = "";
+			expect(envOrThrow(NAME, true)).toBe("");
+		});
+
+		it("still throws for an unset variable when allowEmpty is true", () => {
+			expect(() => envOrThrow(NAME, true)).toThrow(/not set/);
+		});
 	});
 
 	it("names the variable in the error", () => {

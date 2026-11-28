@@ -23,7 +23,7 @@ const resolveTsFromJs = {
 export default defineConfig({
 	plugins: [resolveTsFromJs],
 	test: {
-		include: ["test/**/*.test.ts"],
+		include: ["src/**/*.test.ts", "test/**/*.test.ts"],
 		environment: "node",
 	},
 });

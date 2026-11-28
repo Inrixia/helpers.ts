@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { memoize, memoizeArgless } from "../src/class/Memo.js";
+import { memoize, memoizeArgless } from "./Memo.js";
 
 /** Collects unhandled rejections so tests can assert none were produced. */
 const trackUnhandled = () => {

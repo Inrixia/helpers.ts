@@ -21,8 +21,8 @@ export type CommentOptions = {
 	baseRef?: string;
 	/** Commit the base summary was measured on */
 	baseSha?: string;
-	/** How files group into rows of the area table, from parseAreas */
-	areas?: readonly AreaRule[];
+	/** Rows beyond the top-level folders in the area table, from parseExtraAreas */
+	extraAreas?: readonly AreaRule[];
 	/** Coverage floors from thresholds-file, if configured */
 	thresholds?: Thresholds;
 };
@@ -36,11 +36,11 @@ export const isSummary = (value: unknown): value is Summary => {
 /** How many changed files the comment lists before cutting off */
 export const maxFileRows = 20;
 
-/** `src` groups everything under it as one area, `plugins/*` makes one area per entry directly under `plugins` */
+/** `plugins/lib` groups everything under it as one area, `plugins/*` makes one area per entry directly under `plugins` */
 export type AreaRule = { prefix: readonly string[]; split: boolean };
 
 /** Most specific rule first, so `plugins/lib` wins over `plugins/*` for files under it */
-export const parseAreas = (input: string | undefined): AreaRule[] =>
+export const parseExtraAreas = (input: string | undefined): AreaRule[] =>
 	(input ?? "")
 		.split(/[\n,]+/)
 		// A leading `- ` lets the input be written as a YAML style list inside a block scalar
@@ -258,7 +258,7 @@ export const buildComment = (summary: Summary | undefined, options: CommentOptio
 	}
 
 	const { root, base, thresholds } = options;
-	const rules = options.areas ?? [];
+	const rules = options.extraAreas ?? [];
 	const total = summary.total;
 	const totalChange = (metric: CoverageMetric) => (base ? formatChange(change(total[metric], base.total[metric])) : "");
 	const failures = missed(total, thresholds);

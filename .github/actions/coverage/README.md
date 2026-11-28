@@ -68,7 +68,7 @@ jobs:
 | ----------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `summary`               | `coverage/coverage-summary.json`        | Path to Vitest `coverage-summary.json`.                                                                      |
 | `test-results`          | `coverage/test-results.json`            | Path to Vitest `--reporter=json` output. Required with `success: true` to publish badges/floors.             |
-| `areas`                 | `""`                                    | Area table rows, see [Areas](#areas).                                                                        |
+| `extra-areas`           | `""`                                    | Area table rows beyond the top-level folders, see [Extra areas](#extra-areas).                               |
 | `thresholds-file`       | `.github/coverage-thresholds.json`      | JSON floors file (`lines`, `statements`, `branches`, `functions`). If absent, no floors are shown or raised. |
 | `badges-dir`            | `.github/badges`                        | Directory for `coverage.json`, `coverage-branches.json`, and `tests.json`.                                   |
 | `header`                | `coverage`                              | Sticky comment key (must match the comment action).                                                          |
@@ -78,25 +78,24 @@ jobs:
 | `report-retention-days` | `14`                                    | Retention days for the `coverage-report` artifact.                                                           |
 | `token`                 | `${{ github.token }}`                   | Token for looking up and downloading base coverage artifacts.                                                |
 
-### Areas
+### Extra areas
 
-Each file is one row's worth of coverage in the area table. Without `areas`, files group by their top-level folder. Each entry overrides that for the files under it:
+The area table has one row per top-level folder. `extra-areas` adds finer rows for the files under an entry:
 
-- `folder` (or `folder/sub`): every file under it is one area.
+- `folder/sub`: every file under it is one area.
 - `folder/*`: one area per entry directly under `folder`.
 
-The most specific entry wins, and files no entry matches still group by top-level folder. Action inputs are strings, so write the list inside a block scalar; newlines, commas and a leading `- ` all separate entries:
+The most specific entry wins, so `plugins/lib` beats `plugins/*`, and files no entry matches stay in their top-level folder's row. Action inputs are strings, so write the list inside a block scalar; newlines, commas and a leading `- ` all separate entries:
 
 ```yaml
 - uses: Inrixia/helpers.ts/.github/actions/coverage@master
   with:
-   areas: |
+   extra-areas: |
     - plugins/*
-    - plugins/lib
-    - render
+    - render/src
 ```
 
-Changing `areas` alone does not post a comment: the base is grouped the same way, so no area changes against it.
+Changing `extra-areas` alone does not post a comment: the base is grouped the same way, so no area changes against it.
 
 ## Comment action inputs
 

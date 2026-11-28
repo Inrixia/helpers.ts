@@ -38,5 +38,5 @@ jobs:
    - uses: ./.github/actions/coverage
      if: always()
      with:
-      areas: |
+      extra-areas: |
        - src/*

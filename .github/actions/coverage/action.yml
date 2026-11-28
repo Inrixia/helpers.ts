@@ -10,8 +10,8 @@ inputs:
   description: "Path to vitest JSON test results (--reporter=json)"
   required: false
   default: "coverage/test-results.json"
- areas:
-  description: "Area table rows, newline or comma separated (`- ` prefix allowed): `folder` is one area, `folder/*` is one area per entry under it. Unmatched files group by top-level folder"
+ extra-areas:
+  description: "Area table rows beyond the top-level folders, newline or comma separated (`- ` prefix allowed): `folder/sub` is one area, `folder/*` is one area per entry under it"
   required: false
   default: ""
  thresholds-file:
@@ -91,7 +91,7 @@ runs:
     env:
      COVERAGE_SUMMARY: ${{ inputs.summary }}
      COVERAGE_TEST_RESULTS: ${{ inputs.test-results }}
-     COVERAGE_AREAS: ${{ inputs.areas }}
+     COVERAGE_EXTRA_AREAS: ${{ inputs.extra-areas }}
      COVERAGE_THRESHOLDS_FILE: ${{ inputs.thresholds-file }}
      COVERAGE_BASE_REF: ${{ github.base_ref }}
     run: node "${{ github.action_path }}/src/main.ts" report

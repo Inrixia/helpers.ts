@@ -1,4 +1,4 @@
 .vs/
 dist/
 node_modules/
-coverage/
+/coverage/

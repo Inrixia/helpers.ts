@@ -2,14 +2,14 @@
  * CLI entrypoint for the shared coverage composite action.
  *
  * Subcommands:
- *   report  - writes coverage/comment.md, appends to GITHUB_STEP_SUMMARY, emits publish=true|false
+ *   report  - writes coverage/comment.md (or coverage/unchanged on PRs with no change), appends to GITHUB_STEP_SUMMARY, emits publish=true|false
  *   publish - writes shields endpoint badges and raises floors in thresholds-file
  */
-import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { writeBadges, type TestResults } from "./badge.ts";
-import { buildComment, isSummary, missed, parseAreas } from "./report.ts";
+import { buildComment, hasCoverageChanged, isSummary, missed, parseAreas } from "./report.ts";
 import { raiseThresholds, readThresholds } from "./thresholds.ts";
 
 const readJson = async (file: string): Promise<unknown> => {
@@ -20,14 +20,14 @@ const readJson = async (file: string): Promise<unknown> => {
 	}
 };
 
-const isTestSuccess = (value: unknown): value is TestResults =>
-	typeof value === "object" && value !== null && (value as TestResults).success === true;
+const isTestSuccess = (value: unknown): value is TestResults => typeof value === "object" && value !== null && (value as TestResults).success === true;
 
 const root = process.cwd();
 const summaryPath = path.resolve(root, process.env.COVERAGE_SUMMARY || "coverage/coverage-summary.json");
 const testResultsPath = path.resolve(root, process.env.COVERAGE_TEST_RESULTS || "coverage/test-results.json");
 const baseSummaryPath = path.resolve(root, process.env.COVERAGE_BASE_SUMMARY || "coverage/base/coverage-summary.json");
 const commentPath = path.resolve(root, "coverage", "comment.md");
+const unchangedPath = path.resolve(root, "coverage", "unchanged");
 const thresholdsPath = path.resolve(root, process.env.COVERAGE_THRESHOLDS_FILE || ".github/coverage-thresholds.json");
 const badgesDir = path.resolve(root, process.env.COVERAGE_BADGES_DIR || ".github/badges");
 const areas = parseAreas(process.env.COVERAGE_AREAS);
@@ -59,9 +59,21 @@ if (command === "report") {
 		thresholds,
 	});
 
+	const isPush = process.env.GITHUB_EVENT_NAME === "push";
+	const shouldWriteComment = isPush || hasCoverageChanged(summary, base, root, areas);
+
 	await mkdir(path.dirname(commentPath), { recursive: true });
-	await writeFile(commentPath, `${comment}\n`);
-	console.log(`Wrote ${path.relative(root, commentPath)}`);
+	if (shouldWriteComment) {
+		await rm(unchangedPath, { force: true });
+		await writeFile(commentPath, `${comment}\n`);
+		console.log(`Wrote ${path.relative(root, commentPath)}`);
+	} else {
+		await rm(commentPath, { force: true });
+		// Empty marker so the comment workflow can tell "unchanged, delete sticky comment" apart from "nothing ran"
+		await writeFile(unchangedPath, "");
+		const reason = summary === undefined ? "no valid coverage summary" : "coverage did not change against base";
+		console.log(`Skipped ${path.relative(root, commentPath)}: ${reason}`);
+	}
 
 	const stepSummary = process.env.GITHUB_STEP_SUMMARY;
 	if (stepSummary) await appendFile(stepSummary, `${comment.trim()}\n`);
@@ -73,11 +85,7 @@ if (command === "report") {
 	}
 
 	const testResults = await readJson(testResultsPath);
-	const canPublish =
-		process.env.GITHUB_EVENT_NAME === "push" &&
-		summary !== undefined &&
-		isTestSuccess(testResults) &&
-		failures.length === 0;
+	const canPublish = process.env.GITHUB_EVENT_NAME === "push" && summary !== undefined && isTestSuccess(testResults) && failures.length === 0;
 
 	console.log(`publish=${canPublish}`);
 	const githubOutput = process.env.GITHUB_OUTPUT;

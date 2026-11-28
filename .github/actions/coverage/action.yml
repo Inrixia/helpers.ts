@@ -11,7 +11,7 @@ inputs:
   required: false
   default: "coverage/test-results.json"
  areas:
-  description: "Newline or comma separated top-level folders grouped one level deeper in the area table"
+  description: "Area table rows, newline or comma separated (`- ` prefix allowed): `folder` is one area, `folder/*` is one area per entry under it. Unmatched files group by top-level folder"
   required: false
   default: ""
  thresholds-file:

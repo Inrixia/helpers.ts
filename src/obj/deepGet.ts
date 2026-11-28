@@ -16,7 +16,13 @@ import { UnknownRecord } from "../ts/types.js";
  */
 
 export const deepGet = <T = unknown>(obj: UnknownRecord, property: string, delimiter = "."): T | undefined => {
-	const arr = property.split(delimiter);
-	while (arr.length && (obj = obj[arr.shift() as string] as UnknownRecord));
-	return obj as T;
+	let current: unknown = obj;
+	for (const key of property.split(delimiter)) {
+		// Only a nullish value ends the walk. Falsy values like 0, "" and false
+		// are legitimate leaves, and treating them as the end of the path both
+		// returned the wrong level and silently ignored the rest of the key.
+		if (current === null || current === undefined) return undefined;
+		current = (<UnknownRecord>current)[key];
+	}
+	return <T | undefined>current;
 };

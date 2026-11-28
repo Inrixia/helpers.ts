@@ -40,9 +40,9 @@ describe("loopError", () => {
 		await expect(loopError(async () => "first try", async () => {})).resolves.toBe("first try");
 	});
 
-	// The default handler is `(err) => reject(err)`. It is only wired to the
-	// outer promise via `.then(() => ...)`, so its rejection was dropped and
-	// the returned promise never settled.
+	// The default handler rejects. Its rejection is only wired to the outer
+	// promise via `.then(() => ...)`, so a dropped rejection left the returned
+	// promise never settling.
 	it("rejects instead of hanging when the handler rejects", async () => {
 		const outcome = await settleWithin(
 			loopError(

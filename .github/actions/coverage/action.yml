@@ -1,0 +1,192 @@
+name: "Coverage report, badges, and floors"
+description: "Compares PR coverage against the base branch, builds the PR comment and step summary, and publishes badges and raised floors on push."
+
+inputs:
+ summary:
+  description: "Path to vitest coverage-summary.json"
+  required: false
+  default: "coverage/coverage-summary.json"
+ test-results:
+  description: "Path to vitest JSON test results (--reporter=json)"
+  required: false
+  default: "coverage/test-results.json"
+ areas:
+  description: "Newline or comma separated top-level folders grouped one level deeper in the area table"
+  required: false
+  default: ""
+ thresholds-file:
+  description: "Path to vitest coverage thresholds JSON"
+  required: false
+  default: ".github/coverage-thresholds.json"
+ badges-dir:
+  description: "Directory where shields endpoint badge JSON files are written"
+  required: false
+  default: ".github/badges"
+ header:
+  description: "Sticky comment key (must match the comment action)"
+  required: false
+  default: "coverage"
+ commit-message:
+  description: "Commit message for updated badges and floors"
+  required: false
+  default: "ci: update coverage badges and floors"
+ commit-files:
+  description: "Extra file patterns added to the auto-commit"
+  required: false
+  default: ""
+ report-dir:
+  description: "Coverage directory uploaded as the coverage-report artifact"
+  required: false
+  default: "coverage"
+ report-retention-days:
+  description: "Retention days for the coverage-report artifact"
+  required: false
+  default: "14"
+ token:
+  description: "GitHub token used to look up and download the base coverage artifact"
+  required: false
+  default: "${{ github.token }}"
+
+runs:
+ using: "composite"
+ steps:
+  # The comment compares against the base branch, never against an earlier run of this PR, so a later commit that wins
+  # back a little can't hide an earlier drop. The base is the newest successful push run on the base branch whose commit
+  # is the PR's base commit or one before it (CI's badge/floor commits sit on top and don't change coverage). A run
+  # newer than the PR's base would count changes the PR doesn't have, so those are skipped. Runs after the test step,
+  # because vitest clears coverage/ when it starts.
+  - name: Find base coverage
+    if: always() && github.event_name == 'pull_request'
+    shell: bash
+    env:
+     GH_TOKEN: ${{ inputs.token }}
+     BASE_REF: ${{ github.base_ref }}
+     BASE_SHA: ${{ github.event.pull_request.base.sha }}
+    run: |
+     workflow="${GITHUB_WORKFLOW_REF%%@*}"
+     workflow="${workflow##*/}"
+     if [ -n "$workflow" ] && runs=$(gh run list -R "$GITHUB_REPOSITORY" --workflow "$workflow" --branch "$BASE_REF" --event push --status success --limit 20 --json databaseId,headSha -q '.[] | "\(.databaseId) \(.headSha)"'); then
+       while read -r id sha; do
+         [ -z "$id" ] && continue
+         # "ahead": BASE_SHA is ahead of the run's commit, so the run's commit is an ancestor
+         status=$(gh api "repos/$GITHUB_REPOSITORY/compare/$sha...$BASE_SHA" -q .status) || continue
+         if [ "$status" = identical ] || [ "$status" = ahead ]; then
+           # An expired or missing artifact is one run to skip, not the end of the search: `break` here gave up on older
+           # runs that may still have theirs
+           gh run download "$id" -R "$GITHUB_REPOSITORY" -n coverage-summary -D coverage/base || { rm -rf coverage/base; continue; }
+           echo "COVERAGE_BASE_SHA=$sha" >> "$GITHUB_ENV"
+           echo "Comparing with run $id on $BASE_REF @ $sha"
+           exit 0
+         fi
+       done <<< "$runs"
+     fi
+     echo "::warning::No coverage from $BASE_REF to compare against"
+
+  # Always, so a failing run still reports the coverage it managed. Writes coverage/comment.md and the run page summary.
+  - name: Report coverage
+    id: report
+    if: always()
+    shell: bash
+    env:
+     COVERAGE_SUMMARY: ${{ inputs.summary }}
+     COVERAGE_TEST_RESULTS: ${{ inputs.test-results }}
+     COVERAGE_AREAS: ${{ inputs.areas }}
+     COVERAGE_THRESHOLDS_FILE: ${{ inputs.thresholds-file }}
+     COVERAGE_BASE_REF: ${{ github.base_ref }}
+    run: node "${{ github.action_path }}/src/main.ts" report
+
+  # Posted by a workflow_run workflow: a PR from a fork gets a read-only token here, so the comment has
+  # to come from a workflow_run, which runs in this repo with a write token and never touches the PR's code.
+  - name: Upload coverage comment
+    if: always() && github.event_name == 'pull_request'
+    uses: actions/upload-artifact@v7
+    with:
+     name: coverage-comment
+     path: coverage/comment.md
+     if-no-files-found: ignore
+     retention-days: 7
+
+  # What pull requests against this branch compare their coverage with (Find base coverage, above).
+  # The keys are made repo relative here, because the pull request run cannot know which workspace root this run used:
+  # a different one turns every area into ".." and invents removed and new files.
+  - name: Normalise coverage summary
+    if: github.event_name == 'push'
+    shell: bash
+    env:
+     COVERAGE_SUMMARY: ${{ inputs.summary }}
+    run: |
+     mkdir -p "$RUNNER_TEMP/coverage-upload"
+     if [ -f "$COVERAGE_SUMMARY" ]; then
+       jq --arg root "$GITHUB_WORKSPACE/" 'with_entries(if .key == "total" then . else .key |= ltrimstr($root) end)' \
+         "$COVERAGE_SUMMARY" > "$RUNNER_TEMP/coverage-upload/coverage-summary.json"
+     fi
+
+  - name: Upload coverage summary
+    if: github.event_name == 'push'
+    uses: actions/upload-artifact@v7
+    with:
+     name: coverage-summary
+     path: ${{ runner.temp }}/coverage-upload/coverage-summary.json
+     if-no-files-found: ignore
+     retention-days: 90
+
+  # Full coverage report directory (lcov/html/summary/comment) for manual inspection and download
+  - name: Upload coverage report
+    if: always()
+    uses: actions/upload-artifact@v7
+    with:
+     name: coverage-report
+     path: ${{ inputs.report-dir }}
+     if-no-files-found: ignore
+     retention-days: ${{ inputs.report-retention-days }}
+
+  # A concurrent workflow or push can advance the branch before tests finish. Rebase before generating the files so
+  # they sit on the latest head, and warn rather than failing the build if the pull cannot complete.
+  - name: Sync with branch head
+    if: steps.report.outputs.publish == 'true'
+    shell: bash
+    env:
+     REF_NAME: ${{ github.ref_name }}
+    run: |
+     if ! git pull --rebase --autostash origin "$REF_NAME"; then
+       git rebase --abort 2>/dev/null || true
+       echo "::warning::Failed to rebase onto origin/$REF_NAME, continuing on checked-out commit"
+     fi
+
+  # Badges are for the default branch only: a PR run has nothing to publish, and its badges would describe an
+  # unmerged branch. Floors only go up, so raising them where the merge lands keeps them honest without asking every
+  # PR to touch the thresholds file.
+  - name: Publish badges and raise floors
+    id: publish
+    if: steps.report.outputs.publish == 'true'
+    shell: bash
+    env:
+     COVERAGE_SUMMARY: ${{ inputs.summary }}
+     COVERAGE_TEST_RESULTS: ${{ inputs.test-results }}
+     COVERAGE_THRESHOLDS_FILE: ${{ inputs.thresholds-file }}
+     COVERAGE_BADGES_DIR: ${{ inputs.badges-dir }}
+     COMMIT_FILES: ${{ inputs.commit-files }}
+    # Inputs go through env rather than ${{ }} in the script, so a value can't inject shell
+    run: |
+     node "${{ github.action_path }}/src/main.ts" publish
+     patterns="$COVERAGE_BADGES_DIR/*.json"
+     if [ -f "$COVERAGE_THRESHOLDS_FILE" ]; then
+       patterns="$patterns $COVERAGE_THRESHOLDS_FILE"
+     fi
+     extra=$(printf '%s' "$COMMIT_FILES" | tr '\n' ' ')
+     if [ -n "$extra" ]; then
+       patterns="$patterns $extra"
+     fi
+     echo "file_pattern=$patterns" >> "$GITHUB_OUTPUT"
+
+  # The badges are read over jsDelivr by shields.io, so they have to live in the repo. jsDelivr rather than
+  # raw.githubusercontent.com: shields fetches the JSON on every render and raw rate-limits it, which shows up as a
+  # broken badge. It caches for up to 12h, so a badge can trail the file by that much.
+  # Commits made with GITHUB_TOKEN don't start another workflow run, so this can't loop.
+  # One commit for both files: the badges and the floors change together, and two commits per push was churn.
+  - name: Commit badges and raised floors
+    if: steps.report.outputs.publish == 'true'
+    uses: stefanzweifel/git-auto-commit-action@v7
+    with:
+     commit_message: ${{ inputs.commit-message }}
+     file_pattern: ${{ steps.publish.outputs.file_pattern }}

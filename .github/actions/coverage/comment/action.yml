@@ -1,0 +1,82 @@
+name: "Coverage PR comment"
+description: "Downloads the coverage-comment artifact from a workflow_run and posts it as a sticky PR comment without checking out PR code."
+
+inputs:
+ header:
+  description: "Sticky comment key (must match the report action)"
+  required: false
+  default: "coverage"
+ artifact:
+  description: "Artifact name uploaded by the report action"
+  required: false
+  default: "coverage-comment"
+ token:
+  description: "GitHub token with actions:read and pull-requests:write"
+  required: false
+  default: "${{ github.token }}"
+
+runs:
+ using: "composite"
+ steps:
+  - name: Find pull request
+    id: pr
+    uses: actions/github-script@v9
+    with:
+     github-token: ${{ inputs.token }}
+     script: |
+      const run = context.payload.workflow_run;
+      if (run?.event !== "pull_request") {
+        core.warning(`Triggering workflow_run event is '${run?.event ?? "unknown"}', expected 'pull_request'; skipping`);
+        return;
+      }
+      let number = run.pull_requests?.[0]?.number;
+      if (number === undefined && run.head_branch !== null) {
+        // A run from a fork's branch does not carry its pull request in the payload, and its commit does not exist in
+        // this repo (a fork's SHA is only here once merged), so ask for the pull request by the branch it ran on. The
+        // head filter needs `<owner>:<branch>`, and for a branch of this repo the owner is this repo's.
+        const owner = run.head_repository?.owner?.login ?? context.repo.owner;
+        const { data } = await github.rest.pulls.list({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          head: `${owner}:${run.head_branch}`,
+          state: "open",
+        });
+        number = data[0]?.number;
+      }
+      if (number === undefined) {
+        // A warning, not info: this job exists to post a comment, and doing nothing quietly is the failure mode it had
+        core.warning("No open pull request for this run, nothing to comment on");
+        return;
+      }
+      core.setOutput("number", number);
+
+  - name: Download coverage comment
+    id: download
+    if: steps.pr.outputs.number != ''
+    shell: bash
+    env:
+     GH_TOKEN: ${{ inputs.token }}
+     RUN_ID: ${{ github.event.workflow_run.id }}
+     ARTIFACT: ${{ inputs.artifact }}
+    run: |
+     if ! gh run download "$RUN_ID" -R "$GITHUB_REPOSITORY" -n "$ARTIFACT" -D coverage-artifact; then
+       echo "::warning::The triggering run did not upload '$ARTIFACT', nothing to post"
+       exit 0
+     fi
+     if [ ! -s coverage-artifact/comment.md ]; then
+       echo "::warning::Artifact '$ARTIFACT' has no non-empty comment.md, skipping"
+       exit 0
+     fi
+     # The body is built from paths in the pull request, so treat it as text and cap below GitHub's 65536-char limit
+     node -e 'const fs = require("node:fs"); const p = "coverage-artifact/comment.md"; fs.writeFileSync(p, fs.readFileSync(p, "utf8").slice(0, 60000));'
+     echo "ready=true" >> "$GITHUB_OUTPUT"
+
+  - name: Post coverage comment
+    if: steps.pr.outputs.number != '' && steps.download.outputs.ready == 'true'
+    uses: marocchino/sticky-pull-request-comment@v3
+    with:
+     header: ${{ inputs.header }}
+     number: ${{ steps.pr.outputs.number }}
+     path: coverage-artifact/comment.md
+     skip_unchanged: true
+     GITHUB_TOKEN: ${{ inputs.token }}

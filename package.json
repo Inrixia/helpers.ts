@@ -10,8 +10,7 @@
 		"prepare": "rimraf dist && tsc",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"test:coverage": "vitest run --coverage",
-		"coverage:badge": "node test/coverageBadge.js"
+		"test:coverage": "vitest run --coverage"
 	},
 	"repository": {
 		"type": "git",

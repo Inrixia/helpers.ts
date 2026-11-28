@@ -1,8 +1,6 @@
 # @inrixia/helpers
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Inrixia/helpers.ts/ci.yml?label=CI&branch=master)](https://github.com/Inrixia/helpers.ts/actions/workflows/ci.yml)
-[![coverage](https://img.shields.io/endpoint?url=https://cdn.jsdelivr.net/gh/Inrixia/helpers.ts@master/.github/badges/coverage.json)](#testing)
-[![branch coverage](https://img.shields.io/endpoint?url=https://cdn.jsdelivr.net/gh/Inrixia/helpers.ts@master/.github/badges/coverage-branches.json)](#testing)
 [![npm](https://img.shields.io/npm/v/@inrixia/helpers)](https://www.npmjs.com/package/@inrixia/helpers)
 [![license](https://img.shields.io/badge/license-ISC-blue)](./LICENSE)
 
@@ -20,14 +18,14 @@ pnpm i @inrixia/helpers
 
 Everything is exported from the package root.
 
-| Folder | Contents |
-| --- | --- |
-| `class/` | `ArgsMap`, `DequalMap` and `StringifyMap` (maps keyed by argument lists, deep equality and JSON), `memoize` and its variants, `Promize`, `Semaphore`, `Signal` |
-| `fn/` | `debounce`, `asyncDebounce`, `retry`, `loopError`, `runFor`, `sleep`, `lazy`, `toRange`, `toBase64`, the `fetch` response helpers, `registerEmitter` |
-| `math/` | `qRnd`, `nPad`, `to360`, `angleDifference` |
-| `obj/` | `deepGet`, `deepMerge`, `chunkArray`, `setDefaults`, `objectify`, `getEnv`, `envOrThrow`, `fillTemplate`, `deepTypeCompare` |
-| `ts/` | `typeOf`, `isT`, `isObject`, `isKeyOf`, plus the type-level number helpers |
-| `conv.ts`, `geo.ts` | Humidity conversions, degrees/minutes/seconds, distance between coordinates |
+| Folder              | Contents                                                                                                                                                       |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `class/`            | `ArgsMap`, `DequalMap` and `StringifyMap` (maps keyed by argument lists, deep equality and JSON), `memoize` and its variants, `Promize`, `Semaphore`, `Signal` |
+| `fn/`               | `debounce`, `asyncDebounce`, `retry`, `loopError`, `runFor`, `sleep`, `lazy`, `toRange`, `toBase64`, the `fetch` response helpers, `registerEmitter`           |
+| `math/`             | `qRnd`, `nPad`, `to360`, `angleDifference`                                                                                                                     |
+| `obj/`              | `deepGet`, `deepMerge`, `chunkArray`, `setDefaults`, `objectify`, `getEnv`, `envOrThrow`, `fillTemplate`, `deepTypeCompare`                                    |
+| `ts/`               | `typeOf`, `isT`, `isObject`, `isKeyOf`, plus the type-level number helpers                                                                                     |
+| `conv.ts`, `geo.ts` | Humidity conversions, degrees/minutes/seconds, distance between coordinates                                                                                    |
 
 ## A few examples
 
@@ -79,7 +77,7 @@ pnpm test:watch      # watch mode
 pnpm test:coverage   # same thing, plus a coverage report in coverage/
 ```
 
-CI runs the build and the suite on every pull request and every push to `master`, and keeps the coverage report as a build artifact. On a push it also regenerates the two coverage badges and commits them, which is why those badges can lag a merge by a few minutes. The workflow is in `.github/workflows/ci.yml`.
+CI runs the build and the suite on every pull request and every push to `master`, and keeps the coverage report as a build artifact. The workflow is in `.github/workflows/ci.yml`.
 
 ## Contributors
 

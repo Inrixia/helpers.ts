@@ -77,7 +77,7 @@ pnpm test:watch      # watch mode
 pnpm test:coverage   # same thing, plus a coverage report in coverage/
 ```
 
-CI runs the build and the suite on every pull request and every push to `master`, and keeps the coverage report as a build artifact. The workflow is in `.github/workflows/ci.yml`.
+CI runs the build and the suite on every pull request and every push to `master`. The workflow is in `.github/workflows/ci.yml`.
 
 ## Contributors
 

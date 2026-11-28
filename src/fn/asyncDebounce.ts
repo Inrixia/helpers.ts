@@ -25,7 +25,7 @@ export const asyncDebounce = <G extends AnyAsyncFn>(generator: G, ignoreArgs = f
 		let _current = cache.get(args);
 		if (_current !== undefined) return _current;
 		_current = generator(...args) as ReturnType<G>;
-		onSettled(_current, () => cache.delete(args) as unknown as void);
+		onSettled(_current, () => void cache.delete(args));
 		cache.set(args, _current);
 		return _current;
 	}) as AnyAsyncFn as G;

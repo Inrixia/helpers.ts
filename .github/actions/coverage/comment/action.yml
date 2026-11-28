@@ -63,20 +63,34 @@ runs:
        echo "::warning::The triggering run did not upload '$ARTIFACT', nothing to post"
        exit 0
      fi
-     if [ ! -s coverage-artifact/comment.md ]; then
-       echo "::warning::Artifact '$ARTIFACT' has no non-empty comment.md, skipping"
+     if [ -s coverage-artifact/comment.md ]; then
+       # The body is built from paths in the pull request, so treat it as text and cap below GitHub's 65536-char limit
+       node -e 'const fs = require("node:fs"); const p = "coverage-artifact/comment.md"; fs.writeFileSync(p, fs.readFileSync(p, "utf8").slice(0, 60000));'
+       echo "action=post" >> "$GITHUB_OUTPUT"
        exit 0
      fi
-     # The body is built from paths in the pull request, so treat it as text and cap below GitHub's 65536-char limit
-     node -e 'const fs = require("node:fs"); const p = "coverage-artifact/comment.md"; fs.writeFileSync(p, fs.readFileSync(p, "utf8").slice(0, 60000));'
-     echo "ready=true" >> "$GITHUB_OUTPUT"
+     if [ -e coverage-artifact/unchanged ]; then
+       echo "Coverage unchanged; removing any previous sticky comment"
+       echo "action=delete" >> "$GITHUB_OUTPUT"
+       exit 0
+     fi
+     echo "::warning::Artifact '$ARTIFACT' has no non-empty comment.md or unchanged marker, skipping"
 
   - name: Post coverage comment
-    if: steps.pr.outputs.number != '' && steps.download.outputs.ready == 'true'
+    if: steps.pr.outputs.number != '' && steps.download.outputs.action == 'post'
     uses: marocchino/sticky-pull-request-comment@v3
     with:
      header: ${{ inputs.header }}
      number: ${{ steps.pr.outputs.number }}
      path: coverage-artifact/comment.md
      skip_unchanged: true
+     GITHUB_TOKEN: ${{ inputs.token }}
+
+  - name: Delete coverage comment
+    if: steps.pr.outputs.number != '' && steps.download.outputs.action == 'delete'
+    uses: marocchino/sticky-pull-request-comment@v3
+    with:
+     header: ${{ inputs.header }}
+     number: ${{ steps.pr.outputs.number }}
+     delete: true
      GITHUB_TOKEN: ${{ inputs.token }}

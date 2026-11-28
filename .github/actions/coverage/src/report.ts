@@ -113,8 +113,12 @@ export const change = (head: Counts, base: Counts): number | undefined => {
 	return Object.is(delta, -0) ? 0 : delta;
 };
 
+const isNonZeroDelta = (delta: number | undefined): delta is number => delta !== undefined && delta !== 0;
+
+const hasTotalsChanged = (head: Totals, base: Totals) => coverageMetrics.some((metric) => isNonZeroDelta(change(head[metric], base[metric])));
+
 /** ` +0.4%`, ` -0.2% 🔻`, or nothing when it didn't move, or could not be worked out */
-const formatChange = (delta: number | undefined) => (delta === undefined || delta === 0 ? "" : delta > 0 ? ` +${delta}%` : ` ${delta}% 🔻`);
+const formatChange = (delta: number | undefined) => (!isNonZeroDelta(delta) ? "" : delta > 0 ? ` +${delta}%` : ` ${delta}% 🔻`);
 
 /**
  * Cell text comes from file paths, which a pull request author controls. Escape what would end the cell or start markup,
@@ -166,7 +170,7 @@ const changedFiles = (summary: Summary, base: Summary, root: string) => {
 		}
 		const deltas = coverageMetrics.map((metric) => change(coverage[metric], old[metric]));
 		// A metric that could not be compared is not a change either, so a file is skipped only when nothing moved
-		if (deltas.every((delta) => delta === undefined || delta === 0)) continue;
+		if (deltas.every((delta) => !isNonZeroDelta(delta))) continue;
 		changes.push({
 			file,
 			kind: deltas.some((delta) => delta !== undefined && delta < 0) ? "down" : "up",
@@ -205,6 +209,27 @@ const fileSection = (changes: FileChange[]) => {
 	if (changes.length > shown.length) lines.push("", `…and ${changes.length - shown.length} more`);
 	lines.push("", "</details>", "");
 	return lines;
+};
+
+/** Whether coverage moved against the base branch in totals, areas, or files (`undefined` deltas are not a change) */
+export const hasCoverageChanged = (
+	summary: Summary | undefined,
+	base: Summary | undefined,
+	root: string,
+	deepAreas: ReadonlySet<string> = new Set(),
+): boolean => {
+	if (summary === undefined || base === undefined) return false;
+	if (hasTotalsChanged(summary.total, base.total)) return true;
+
+	const areas = byArea(summary, root, deepAreas);
+	const baseAreas = byArea(base, root, deepAreas);
+	if (areas.size !== baseAreas.size) return true;
+	for (const [area, totals] of areas) {
+		const old = baseAreas.get(area);
+		if (old === undefined || hasTotalsChanged(totals, old)) return true;
+	}
+
+	return changedFiles(summary, base, root).length > 0;
 };
 
 export const buildComment = (summary: Summary | undefined, options: CommentOptions) => {

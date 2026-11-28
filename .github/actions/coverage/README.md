@@ -2,8 +2,8 @@
 
 Two composite actions for Vitest coverage reporting, shields.io endpoint badges, and auto-raising coverage floors:
 
-- `Inrixia/helpers.ts/.github/actions/coverage` — compares PR coverage against the base branch, writes `coverage/comment.md` + `GITHUB_STEP_SUMMARY`, uploads artifacts (`coverage-comment`, `coverage-summary`, `coverage-report`), and on successful pushes writes shields badges and raises coverage floors.
-- `Inrixia/helpers.ts/.github/actions/coverage/comment` — runs in a `workflow_run` workflow to post the PR comment safely even for fork PRs (never checks out or executes PR code).
+- `Inrixia/helpers.ts/.github/actions/coverage` — compares PR coverage against the base branch, writes `coverage/comment.md` when changed (or an empty `unchanged` marker when unchanged or without a base) + `GITHUB_STEP_SUMMARY`, uploads artifacts (`coverage-comment`, `coverage-summary`, `coverage-report`), and on successful pushes writes shields badges and raises coverage floors.
+- `Inrixia/helpers.ts/.github/actions/coverage/comment` — runs in a `workflow_run` workflow to post or delete the sticky PR comment safely even for fork PRs (never checks out or executes PR code).
 
 ## Prerequisites
 
@@ -18,69 +18,73 @@ Job permissions: `actions: read`, `contents: write`. Run the coverage action wit
 
 ```yaml
 permissions:
-  actions: read
-  contents: write
+ actions: read
+ contents: write
 
 steps:
-  - uses: actions/checkout@v7
-  - uses: actions/setup-node@v7
-    with:
-      node-version: lts/*
-  - run: pnpm test:coverage:ci
-  - if: always()
-    uses: Inrixia/helpers.ts/.github/actions/coverage@master
+ - uses: actions/checkout@v7
+ - uses: actions/setup-node@v7
+   with:
+    node-version: lts/*
+ - run: pnpm test:coverage:ci
+ - if: always()
+   uses: Inrixia/helpers.ts/.github/actions/coverage@master
 ```
 
 ### 2. Comment workflow (`.github/workflows/coverage-comment.yml`)
 
 Runs on `workflow_run` after the CI workflow completes, without checking out PR code:
 
+- Posts or updates the sticky PR comment when `coverage/comment.md` was uploaded (coverage changed in totals, an area, or a file by at least 0.1 percentage points, or a file/area was added or removed).
+- Deletes any previously posted sticky comment when the `unchanged` marker was uploaded (coverage did not change against the base branch, or no base summary was available). `GITHUB_STEP_SUMMARY` is still always written in full on the CI run.
+- Logs a warning and skips when no `coverage-comment` artifact exists (e.g. the report step never ran).
+
 ```yaml
 name: Coverage comment
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types: [completed]
+ workflow_run:
+  workflows: ["CI"]
+  types: [completed]
 
 concurrency:
-  group: coverage-comment-${{ github.event.workflow_run.id }}
+ group: coverage-comment-${{ github.event.workflow_run.id }}
 
 permissions:
-  actions: read
-  pull-requests: write
+ actions: read
+ pull-requests: write
 
 jobs:
-  comment:
-    runs-on: ubuntu-latest
-    if: github.event.workflow_run.event == 'pull_request'
-    steps:
-      - uses: Inrixia/helpers.ts/.github/actions/coverage/comment@master
+ comment:
+  runs-on: ubuntu-latest
+  if: github.event.workflow_run.event == 'pull_request'
+  steps:
+   - uses: Inrixia/helpers.ts/.github/actions/coverage/comment@master
 ```
 
 ## Report action inputs
 
-| Input | Default | Description |
-| --- | --- | --- |
-| `summary` | `coverage/coverage-summary.json` | Path to Vitest `coverage-summary.json`. |
-| `test-results` | `coverage/test-results.json` | Path to Vitest `--reporter=json` output. Required with `success: true` to publish badges/floors. |
-| `areas` | `""` | Newline or comma separated top-level folders grouped one level deeper in the area table (e.g. `plugins`). |
-| `thresholds-file` | `.github/coverage-thresholds.json` | JSON floors file (`lines`, `statements`, `branches`, `functions`). If absent, no floors are shown or raised. |
-| `badges-dir` | `.github/badges` | Directory for `coverage.json`, `coverage-branches.json`, and `tests.json`. |
-| `header` | `coverage` | Sticky comment key (must match the comment action). |
-| `commit-message` | `ci: update coverage badges and floors` | Auto-commit message on push. |
-| `commit-files` | `""` | Extra file patterns included in the auto-commit. |
-| `report-dir` | `coverage` | Full coverage directory uploaded as the `coverage-report` artifact (lcov/html/reports). |
-| `report-retention-days` | `14` | Retention days for the `coverage-report` artifact. |
-| `token` | `${{ github.token }}` | Token for looking up and downloading base coverage artifacts. |
+| Input                   | Default                                 | Description                                                                                                  |
+| ----------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `summary`               | `coverage/coverage-summary.json`        | Path to Vitest `coverage-summary.json`.                                                                      |
+| `test-results`          | `coverage/test-results.json`            | Path to Vitest `--reporter=json` output. Required with `success: true` to publish badges/floors.             |
+| `areas`                 | `""`                                    | Newline or comma separated top-level folders grouped one level deeper in the area table (e.g. `plugins`).    |
+| `thresholds-file`       | `.github/coverage-thresholds.json`      | JSON floors file (`lines`, `statements`, `branches`, `functions`). If absent, no floors are shown or raised. |
+| `badges-dir`            | `.github/badges`                        | Directory for `coverage.json`, `coverage-branches.json`, and `tests.json`.                                   |
+| `header`                | `coverage`                              | Sticky comment key (must match the comment action).                                                          |
+| `commit-message`        | `ci: update coverage badges and floors` | Auto-commit message on push.                                                                                 |
+| `commit-files`          | `""`                                    | Extra file patterns included in the auto-commit.                                                             |
+| `report-dir`            | `coverage`                              | Full coverage directory uploaded as the `coverage-report` artifact (lcov/html/reports).                      |
+| `report-retention-days` | `14`                                    | Retention days for the `coverage-report` artifact.                                                           |
+| `token`                 | `${{ github.token }}`                   | Token for looking up and downloading base coverage artifacts.                                                |
 
 ## Comment action inputs
 
-| Input | Default | Description |
-| --- | --- | --- |
-| `header` | `coverage` | Sticky comment key (must match the report action). |
-| `artifact` | `coverage-comment` | Artifact name uploaded by the report action. |
-| `token` | `${{ github.token }}` | Token with `actions: read` and `pull-requests: write`. |
+| Input      | Default               | Description                                            |
+| ---------- | --------------------- | ------------------------------------------------------ |
+| `header`   | `coverage`            | Sticky comment key (must match the report action).     |
+| `artifact` | `coverage-comment`    | Artifact name uploaded by the report action.           |
+| `token`    | `${{ github.token }}` | Token with `actions: read` and `pull-requests: write`. |
 
 ## Thresholds file (`.github/coverage-thresholds.json`)
 
@@ -88,10 +92,10 @@ Matches Vitest's `coverage.thresholds` shape so `vitest.config.ts` and the actio
 
 ```json
 {
-  "lines": 80,
-  "statements": 78,
-  "branches": 72,
-  "functions": 79
+	"lines": 80,
+	"statements": 78,
+	"branches": 72,
+	"functions": 79
 }
 ```
 

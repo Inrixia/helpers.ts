@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildComment, change, isSummary, maxFileRows, parseAreas, type Counts, type Summary, type Totals } from "./report.ts";
+import { buildComment, change, hasCoverageChanged, isSummary, maxFileRows, parseAreas, type Counts, type Summary, type Totals } from "./report.ts";
 import { type Thresholds } from "./thresholds.ts";
 
 const root = "/repo";
@@ -220,5 +220,59 @@ describe("base summary keys", () => {
 
 		expect(comment).not.toContain("NaN");
 		expect(comment).not.toContain("Files with changed coverage");
+	});
+});
+
+describe("hasCoverageChanged", () => {
+	it("returns false when summary or base is missing", () => {
+		const head = summary({ "native/a.ts": totals(90, 100) });
+		expect(hasCoverageChanged(undefined, head, root)).toBe(false);
+		expect(hasCoverageChanged(head, undefined, root)).toBe(false);
+	});
+
+	it("returns false for identical summaries", () => {
+		const files = { "native/a.ts": totals(9, 10), "src/b.ts": totals(4, 5) };
+		expect(hasCoverageChanged(summary(files), summary(files), root)).toBe(false);
+	});
+
+	it("returns true when one file moves by +0.1 percentage points", () => {
+		const head = summary({ "native/a.ts": totals(501, 1000) });
+		const base = summary({ "native/a.ts": totals(500, 1000) });
+		expect(hasCoverageChanged(head, base, root)).toBe(true);
+	});
+
+	it("returns false when the delta rounds to 0.0 percentage points", () => {
+		const head = summary({ "native/a.ts": totals(1000, 2000) });
+		const base = summary({ "native/a.ts": totals(1001, 2001) });
+		expect(hasCoverageChanged(head, base, root)).toBe(false);
+	});
+
+	it("returns true when a file is added or removed", () => {
+		const base = summary({ "native/a.ts": totals(9, 10) });
+		const withNew = summary({ "native/a.ts": totals(9, 10), "native/b.ts": totals(9, 10) });
+		const withRemoved = summary({});
+		expect(hasCoverageChanged(withNew, base, root)).toBe(true);
+		expect(hasCoverageChanged(withRemoved, base, root)).toBe(true);
+	});
+
+	it("returns true when an area is added, removed, or changes even if totals hold still", () => {
+		const base = summary({ "plugins/a/f.ts": totals(1, 2), "plugins/b/f.ts": totals(1, 2) });
+		const movedArea = summary({ "plugins/a/f.ts": totals(1, 2), "plugins/c/f.ts": totals(1, 2) });
+		expect(hasCoverageChanged(movedArea, base, root, new Set(["plugins"]))).toBe(true);
+	});
+
+	it("returns false when counts are NaN or unreadable", () => {
+		const head = summary({ "native/a.ts": totals(90, 100) });
+		const unreadable = (): Totals => {
+			const counts = { covered: Number.NaN, total: 100 };
+			return { lines: counts, statements: counts, branches: counts, functions: counts };
+		};
+		expect(hasCoverageChanged(head, { total: unreadable(), "native/a.ts": unreadable() }, root)).toBe(false);
+	});
+
+	it("returns false when base keys are repo-relative and head keys are absolute with equal counts", () => {
+		const head = summary({ "native/a.ts": totals(90, 100) });
+		const base: Summary = { total: totals(90, 100), "native/a.ts": totals(90, 100) };
+		expect(hasCoverageChanged(head, base, root)).toBe(false);
 	});
 });

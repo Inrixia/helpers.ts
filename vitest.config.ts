@@ -2,6 +2,8 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { defineConfig } from "vitest/config";
 
+import thresholds from "./.github/coverage-thresholds.json" with { type: "json" };
+
 /**
  * Source files import each other with explicit `.js` specifiers, which
  * `module: NodeNext` requires. Vite does not rewrite those to `.ts`, so tests
@@ -23,13 +25,14 @@ const resolveTsFromJs = {
 export default defineConfig({
 	plugins: [resolveTsFromJs],
 	test: {
-		include: ["src/**/*.test.ts", "test/**/*.test.ts"],
+		include: ["src/**/*.test.ts", "test/**/*.test.ts", ".github/actions/**/*.test.ts"],
 		environment: "node",
 		coverage: {
 			provider: "v8",
 			include: ["src/**/*.ts"],
 			reporter: ["text", "lcov", "json-summary"],
 			reportsDirectory: "coverage",
+			thresholds,
 		},
 	},
 });

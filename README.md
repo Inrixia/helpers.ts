@@ -1,6 +1,9 @@
 # @inrixia/helpers
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Inrixia/helpers.ts/ci.yml?label=CI&branch=master)](https://github.com/Inrixia/helpers.ts/actions/workflows/ci.yml)
+[![coverage](https://img.shields.io/endpoint?url=https://cdn.jsdelivr.net/gh/Inrixia/helpers.ts@master/.github/badges/coverage.json)](#testing--tooling)
+[![branch coverage](https://img.shields.io/endpoint?url=https://cdn.jsdelivr.net/gh/Inrixia/helpers.ts@master/.github/badges/coverage-branches.json)](#testing--tooling)
+[![tests](https://img.shields.io/endpoint?url=https://cdn.jsdelivr.net/gh/Inrixia/helpers.ts@master/.github/badges/tests.json)](#testing--tooling)
 [![npm](https://img.shields.io/npm/v/@inrixia/helpers)](https://www.npmjs.com/package/@inrixia/helpers)
 [![license](https://img.shields.io/badge/license-ISC-blue)](./LICENSE)
 
@@ -87,16 +90,17 @@ deepGet({ a: { b: { c: 5 } } }, "a.b.c"); // 5
 Tests run on [vitest](https://vitest.dev) and live in `test/` and beside source as `src/**/*.test.ts`.
 
 ```sh
-pnpm test            # run once
-pnpm test:watch      # watch mode
-pnpm test:coverage   # run once, plus a coverage report in coverage/
-pnpm lint            # run ESLint
-pnpm lint:fix        # run ESLint with --fix
-pnpm format          # format with Prettier
-pnpm build           # clean build into dist/
+pnpm test               # run once
+pnpm test:watch         # watch mode
+pnpm test:coverage      # run once, plus a coverage report in coverage/
+pnpm test:coverage:ci   # CI mode: also writes coverage/test-results.json
+pnpm lint               # run ESLint
+pnpm lint:fix           # run ESLint with --fix
+pnpm format             # format with Prettier
+pnpm build              # clean build into dist/
 ```
 
-CI runs lint, build, and `pnpm test:coverage` on every pull request and every push to `master`. The workflow is in `.github/workflows/ci.yml`.
+CI runs lint, build, and `pnpm test:coverage:ci` on every pull request and every push to `master` (`.github/workflows/ci.yml`), posting a sticky PR comment with coverage diffs against `master` via `.github/workflows/coverage-comment.yml`. On successful pushes to `master`, it regenerates the coverage and test badges in `.github/badges/` and auto-raises any improved coverage floors in `.github/coverage-thresholds.json`.
 
 See [`AGENTS.md`](./AGENTS.md) for repo conventions, module/import rules, and the vendored agent skills under `.agents/skills/` (updated via `pnpm run updateSkills`).
 
@@ -108,3 +112,7 @@ See [`AGENTS.md`](./AGENTS.md) for repo conventions, module/import rules, and th
 ## License
 
 ISC
+
+```
+
+```

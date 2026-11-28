@@ -24,6 +24,7 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
+		"test:coverage:ci": "vitest run --coverage --reporter=default --reporter=json --outputFile.json=coverage/test-results.json",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --write --end-of-line auto .",

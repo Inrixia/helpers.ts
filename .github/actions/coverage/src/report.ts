@@ -21,8 +21,8 @@ export type CommentOptions = {
 	baseRef?: string;
 	/** Commit the base summary was measured on */
 	baseSha?: string;
-	/** Top-level folders whose files group one level deeper in the area table */
-	areas?: ReadonlySet<string>;
+	/** Rows beyond the top-level folders in the area table, from parseExtraAreas */
+	extraAreas?: readonly AreaRule[];
 	/** Coverage floors from thresholds-file, if configured */
 	thresholds?: Thresholds;
 };
@@ -36,17 +36,36 @@ export const isSummary = (value: unknown): value is Summary => {
 /** How many changed files the comment lists before cutting off */
 export const maxFileRows = 20;
 
-export const parseAreas = (input: string | undefined): Set<string> =>
-	new Set(
-		(input ?? "")
-			.split(/[\n,]+/)
-			.map((entry) => entry.trim().replace(/^\/+|\/+$/g, ""))
-			.filter(Boolean),
-	);
+/** `plugins/lib` groups everything under it as one area, `plugins/*` makes one area per entry directly under `plugins` */
+export type AreaRule = { prefix: readonly string[]; split: boolean };
 
-const areaOf = (relativePath: string, deepAreas: ReadonlySet<string>) => {
+/** Most specific rule first, so `plugins/lib` wins over `plugins/*` for files under it */
+export const parseExtraAreas = (input: string | undefined): AreaRule[] =>
+	(input ?? "")
+		.split(/[\n,]+/)
+		// A leading `- ` lets the input be written as a YAML style list inside a block scalar
+		.map((entry) =>
+			entry
+				.trim()
+				.replace(/^-\s*/, "")
+				.replace(/^\/+|\/+$/g, ""),
+		)
+		.filter(Boolean)
+		.map((entry) => {
+			const split = entry === "*" || entry.endsWith("/*");
+			const folder = split ? entry.slice(0, -1).replace(/\/+$/, "") : entry;
+			return { prefix: folder === "" ? [] : folder.split("/"), split };
+		})
+		.sort((a, b) => b.prefix.length - a.prefix.length || Number(b.split) - Number(a.split));
+
+/** Files no rule matches fall back to their top-level folder, so every file lands in some area */
+const areaOf = (relativePath: string, rules: readonly AreaRule[]) => {
 	const parts = relativePath.split("/");
-	return deepAreas.has(parts[0]) && parts[1] !== undefined ? `${parts[0]}/${parts[1]}` : parts[0];
+	for (const { prefix, split } of rules) {
+		if (parts.length < prefix.length || !prefix.every((part, index) => parts[index] === part)) continue;
+		return parts.slice(0, prefix.length + (split ? 1 : 0)).join("/");
+	}
+	return parts[0];
 };
 
 export const percentage = (counts: Counts) => (counts.total === 0 ? 100 : (counts.covered / counts.total) * 100);
@@ -89,10 +108,10 @@ const byFile = (summary: Summary, root: string) => {
 };
 
 /** Per-area totals, sorted by area name */
-const byArea = (summary: Summary, root: string, deepAreas: ReadonlySet<string>) => {
+const byArea = (summary: Summary, root: string, rules: readonly AreaRule[]) => {
 	const areas = new Map<string, Totals>();
 	for (const [file, coverage] of byFile(summary, root)) {
-		const area = areaOf(file, deepAreas);
+		const area = areaOf(file, rules);
 		let totals = areas.get(area);
 		if (totals === undefined) areas.set(area, (totals = emptyCounts()));
 		for (const metric of coverageMetrics) add(totals[metric], coverage[metric]);
@@ -215,18 +234,13 @@ const fileSection = (changes: FileChange[]) => {
  * Whether coverage moved against the base branch in totals, areas, or files (`undefined` deltas are not a change).
  * Without a base summary, returns true so the PR still gets the full coverage comment.
  */
-export const hasCoverageChanged = (
-	summary: Summary | undefined,
-	base: Summary | undefined,
-	root: string,
-	deepAreas: ReadonlySet<string> = new Set(),
-): boolean => {
+export const hasCoverageChanged = (summary: Summary | undefined, base: Summary | undefined, root: string, rules: readonly AreaRule[] = []): boolean => {
 	if (base === undefined) return true;
 	if (summary === undefined) return false;
 	if (hasTotalsChanged(summary.total, base.total)) return true;
 
-	const areas = byArea(summary, root, deepAreas);
-	const baseAreas = byArea(base, root, deepAreas);
+	const areas = byArea(summary, root, rules);
+	const baseAreas = byArea(base, root, rules);
 	if (areas.size !== baseAreas.size) return true;
 	for (const [area, totals] of areas) {
 		const old = baseAreas.get(area);
@@ -244,7 +258,7 @@ export const buildComment = (summary: Summary | undefined, options: CommentOptio
 	}
 
 	const { root, base, thresholds } = options;
-	const deepAreas = options.areas ?? new Set<string>();
+	const rules = options.extraAreas ?? [];
 	const total = summary.total;
 	const totalChange = (metric: CoverageMetric) => (base ? formatChange(change(total[metric], base.total[metric])) : "");
 	const failures = missed(total, thresholds);
@@ -262,8 +276,8 @@ export const buildComment = (summary: Summary | undefined, options: CommentOptio
 		lines.push("> [!WARNING]", `> Below the configured floors: ${failures.join(", ")}.`, "");
 	}
 
-	const areas = byArea(summary, root, deepAreas);
-	const baseAreas = base ? byArea(base, root, deepAreas) : undefined;
+	const areas = byArea(summary, root, rules);
+	const baseAreas = base ? byArea(base, root, rules) : undefined;
 	lines.push(header("Area"), row("**All**", areaCells(total, base?.total)));
 	for (const [area, totals] of areas) {
 		const old = baseAreas?.get(area);

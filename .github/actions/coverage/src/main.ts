@@ -9,7 +9,7 @@ import { appendFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { writeBadges, type TestResults } from "./badge.ts";
-import { buildComment, hasCoverageChanged, isSummary, missed, parseAreas } from "./report.ts";
+import { buildComment, hasCoverageChanged, isSummary, missed, parseExtraAreas } from "./report.ts";
 import { raiseThresholds, readThresholds } from "./thresholds.ts";
 
 const readJson = async (file: string): Promise<unknown> => {
@@ -30,7 +30,7 @@ const commentPath = path.resolve(root, "coverage", "comment.md");
 const unchangedPath = path.resolve(root, "coverage", "unchanged");
 const thresholdsPath = path.resolve(root, process.env.COVERAGE_THRESHOLDS_FILE || ".github/coverage-thresholds.json");
 const badgesDir = path.resolve(root, process.env.COVERAGE_BADGES_DIR || ".github/badges");
-const areas = parseAreas(process.env.COVERAGE_AREAS);
+const extraAreas = parseExtraAreas(process.env.COVERAGE_EXTRA_AREAS);
 
 const command = process.argv[2];
 
@@ -55,12 +55,12 @@ if (command === "report") {
 		base,
 		baseRef: process.env.COVERAGE_BASE_REF || undefined,
 		baseSha: process.env.COVERAGE_BASE_SHA || undefined,
-		areas,
+		extraAreas,
 		thresholds,
 	});
 
 	const isPush = process.env.GITHUB_EVENT_NAME === "push";
-	const shouldWriteComment = isPush || hasCoverageChanged(summary, base, root, areas);
+	const shouldWriteComment = isPush || hasCoverageChanged(summary, base, root, extraAreas);
 
 	await mkdir(path.dirname(commentPath), { recursive: true });
 	if (shouldWriteComment) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildComment, change, hasCoverageChanged, isSummary, maxFileRows, parseAreas, type Counts, type Summary, type Totals } from "./report.ts";
+import { buildComment, change, hasCoverageChanged, isSummary, maxFileRows, parseExtraAreas, type Counts, type Summary, type Totals } from "./report.ts";
 import { type Thresholds } from "./thresholds.ts";
 
 const root = "/repo";
@@ -44,10 +44,34 @@ describe("isSummary", () => {
 	});
 });
 
-describe("parseAreas", () => {
-	it("splits comma and newline separated area names and strips slashes", () => {
-		expect(parseAreas("plugins, /packages/\n apps/ ")).toEqual(new Set(["plugins", "packages", "apps"]));
-		expect(parseAreas("")).toEqual(new Set());
+describe("parseExtraAreas", () => {
+	it("parses comma, newline and `- ` list entries, most specific first", () => {
+		expect(parseExtraAreas("apps, /plugins/*/\n - plugins/lib\n- native/")).toEqual([
+			{ prefix: ["plugins", "lib"], split: false },
+			{ prefix: ["plugins"], split: true },
+			{ prefix: ["apps"], split: false },
+			{ prefix: ["native"], split: false },
+		]);
+		expect(parseExtraAreas("*")).toEqual([{ prefix: [], split: true }]);
+		expect(parseExtraAreas("")).toEqual([]);
+	});
+
+	it("groups files by the most specific matching rule, falling back to the top-level folder", () => {
+		const comment = buildComment(
+			summary({
+				"plugins/lib/src/a.ts": totals(1, 2),
+				"plugins/lib/src/b.ts": totals(1, 2),
+				"plugins/ui/src/c.ts": totals(2, 2),
+				"src/deep/d.ts": totals(2, 2),
+				"src/e.ts": totals(2, 2),
+				"render/f.ts": totals(2, 2),
+			}),
+			{ root, extraAreas: parseExtraAreas("- plugins/*\n- plugins/lib") },
+		);
+		expect(tableRow(comment, "plugins/lib")).toBe("| plugins/lib | 50% (2/4) | 50% (2/4) | 50% (2/4) | 50% (2/4) |");
+		expect(tableRow(comment, "plugins/ui")).toBeDefined();
+		expect(tableRow(comment, "src")).toBe("| src | 100% (4/4) | 100% (4/4) | 100% (4/4) | 100% (4/4) |");
+		expect(tableRow(comment, "render")).toBeDefined();
 	});
 });
 
@@ -122,7 +146,7 @@ describe("buildComment", () => {
 		const comment = buildComment(summary({ "plugins/foo/src/a.ts": totals(1, 2), "src/c.ts": totals(2, 2) }), {
 			root,
 			base: summary({ "build/b.ts": totals(1, 2) }),
-			areas: new Set(["plugins"]),
+			extraAreas: parseExtraAreas("plugins/*"),
 			thresholds,
 		});
 		expect(tableRow(comment, "plugins/foo (new)")).toBe("| plugins/foo (new) | 50% (1/2) | 50% (1/2) | 50% (1/2) | 50% (1/2) |");
@@ -259,7 +283,7 @@ describe("hasCoverageChanged", () => {
 	it("returns true when an area is added, removed, or changes even if totals hold still", () => {
 		const base = summary({ "plugins/a/f.ts": totals(1, 2), "plugins/b/f.ts": totals(1, 2) });
 		const movedArea = summary({ "plugins/a/f.ts": totals(1, 2), "plugins/c/f.ts": totals(1, 2) });
-		expect(hasCoverageChanged(movedArea, base, root, new Set(["plugins"]))).toBe(true);
+		expect(hasCoverageChanged(movedArea, base, root, parseExtraAreas("plugins/*"))).toBe(true);
 	});
 
 	it("returns false when counts are NaN or unreadable", () => {

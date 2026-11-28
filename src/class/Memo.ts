@@ -6,7 +6,7 @@ import { StringifyMap } from "./StringifyMap.js";
 export type Memoized<G extends AnyFn> = G & { clear: (...args: Parameters<G>) => VoidLike };
 
 // Simplified Map interface with only the methods needed
-export interface MemoMap<K extends any[] = any[], V extends any = any> {
+export interface MemoMap<K extends any[] = any[], V = any> {
 	get: (key: K) => V | undefined;
 	has: (key: K) => boolean;
 	set: (key: K, value: V) => V;

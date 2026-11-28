@@ -1,5 +1,4 @@
 type Zero<S, Z> = S extends `${infer A}${infer B}` ? (B extends "" ? Z : `${Zero<A, Z>}${Zero<B, Z>}`) : "";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type ZZero<S, Z> = S extends `${infer _A}${infer B}` ? Zero<B, Z> : "";
 
 type Increment<T> = T extends "0"

@@ -28,7 +28,7 @@ export const typeOf = (
 	return typof;
 };
 export type TypeOfStr = ReturnType<typeof typeOf>;
-export type Types = undefined | null | number | bigint | unknown[] | string | boolean | symbol | UnknownRecord | Function;
+export type Types = undefined | null | number | bigint | unknown[] | string | boolean | symbol | UnknownRecord | ((...args: any[]) => unknown);
 export type TypeMap = {
 	undefined: undefined;
 	null: null;
@@ -41,5 +41,5 @@ export type TypeMap = {
 	boolean: boolean;
 	symbol: symbol;
 	object: UnknownRecord;
-	function: Function;
+	function: (...args: any[]) => unknown;
 };
